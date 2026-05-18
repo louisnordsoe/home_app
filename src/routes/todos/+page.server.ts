@@ -68,10 +68,28 @@ export const actions: Actions = {
 		const todoId = data.get('todoId') as string;
 		const done = data.get('done') === 'true';
 		const homeId = new ObjectId(locals.user.homeId);
+		const tid = new ObjectId(todoId);
 
-		await db
-			.collection('todos')
-			.updateOne({ _id: new ObjectId(todoId), homeId }, { $set: { done } });
+		const todo = await db.collection('todos').findOne({ _id: tid, homeId });
+		if (!todo) return fail(404, { error: 'Todo not found' });
+
+		await db.collection('todos').updateOne({ _id: tid, homeId }, { $set: { done } });
+
+		if (done) {
+			const today = new Date().toISOString().slice(0, 10);
+			await db.collection('task_logs').insertOne({
+				homeId,
+				todoId: tid,
+				taskTitle: todo.title as string,
+				userEmail: locals.user.email,
+				count: 1,
+				date: today,
+				loggedAt: new Date()
+			});
+		} else {
+			await db.collection('task_logs').deleteOne({ todoId: tid });
+		}
+
 		return { success: true };
 	},
 

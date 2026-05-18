@@ -1,114 +1,104 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { enhance } from '$app/forms';
 	import { changes, connected, type ChangeEvent } from '$lib/stores';
+	import type { PageData } from './$types';
+
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	let eventSource: EventSource | null = null;
+	let copied = $state(false);
 
 	onMount(() => {
 		eventSource = new EventSource('/api/changes');
-
 		eventSource.onopen = () => connected.set(true);
-
 		eventSource.onmessage = (event) => {
-			const data = JSON.parse(event.data) as ChangeEvent & { type?: string };
-			if (data.type === 'connected') return;
-			changes.update((prev) => [data, ...prev].slice(0, 50));
+			const payload = JSON.parse(event.data) as ChangeEvent & { type?: string };
+			if (payload.type === 'connected') return;
+			changes.update((prev) => [payload, ...prev].slice(0, 50));
 		};
-
-		eventSource.onerror = () => {
-			connected.set(false);
-		};
+		eventSource.onerror = () => connected.set(false);
 	});
 
 	onDestroy(() => {
 		eventSource?.close();
 		connected.set(false);
 	});
+
+	function copyInviteCode() {
+		if (!data.home) return;
+		navigator.clipboard.writeText(data.home.inviteCode);
+		copied = true;
+		setTimeout(() => (copied = false), 2000);
+	}
 </script>
 
-<main>
-	<header>
-		<h1>Home App</h1>
-		<span class="status" class:online={$connected}>{$connected ? 'Live' : 'Connecting…'}</span>
-	</header>
+<main class="max-w-3xl mx-auto px-4 py-6 flex flex-col gap-6">
+	{#if data.home}
+		<div
+			class="bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between gap-4"
+		>
+			<div>
+				<p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Invite code</p>
+				<p class="mt-0.5 text-lg font-mono font-semibold text-gray-900 tracking-widest">
+					{data.home.inviteCode}
+				</p>
+				<p class="text-xs text-gray-400 mt-0.5">Share this code to let others join your home</p>
+			</div>
+			<button
+				onclick={copyInviteCode}
+				class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200
+				       text-sm text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
+			>
+				<span class="material-symbols-outlined text-base">
+					{copied ? 'check' : 'content_copy'}
+				</span>
+				{copied ? 'Copied!' : 'Copy'}
+			</button>
+		</div>
+	{/if}
+
+	<div class="flex items-center gap-3">
+		<h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Activity feed</h2>
+		<span
+			class="px-2 py-0.5 rounded-full text-xs font-medium
+			       {$connected ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'}"
+		>
+			{$connected ? 'Live' : 'Connecting…'}
+		</span>
+	</div>
 
 	{#if $changes.length === 0}
-		<p class="empty">Waiting for database changes…</p>
+		<div class="flex flex-col items-center justify-center py-16 text-gray-400 gap-2">
+			<span class="material-symbols-outlined text-4xl">sensors</span>
+			<p class="text-sm">Waiting for database changes…</p>
+		</div>
 	{:else}
-		<ul>
+		<ul class="flex flex-col gap-2">
 			{#each $changes as change (change.wallTime ?? Math.random())}
-				<li>
-					<span class="op">{change.operationType}</span>
-					<span class="coll">{change.ns?.coll}</span>
-					<pre>{JSON.stringify(change.fullDocument ?? change.documentKey, null, 2)}</pre>
+				<li class="bg-white border border-gray-200 rounded-xl px-4 py-3">
+					<div class="flex items-center gap-2 mb-1">
+						<span class="text-xs font-semibold uppercase tracking-wide text-indigo-600">
+							{change.operationType}
+						</span>
+						<span class="text-xs text-gray-400">{change.ns?.coll}</span>
+						{#if change.wallTime}
+							<span class="text-xs text-gray-300 ml-auto">
+								{new Date(change.wallTime).toLocaleTimeString()}
+							</span>
+						{/if}
+					</div>
+					<pre class="text-xs whitespace-pre-wrap break-words text-gray-600">{JSON.stringify(
+							change.fullDocument ?? change.documentKey,
+							null,
+							2
+						)}</pre>
 				</li>
 			{/each}
 		</ul>
 	{/if}
 </main>
-
-<style>
-	main {
-		font-family: system-ui, sans-serif;
-		max-width: 800px;
-		margin: 2rem auto;
-		padding: 0 1rem;
-	}
-
-	header {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		margin-bottom: 1.5rem;
-	}
-
-	.status {
-		padding: 0.25rem 0.75rem;
-		border-radius: 999px;
-		font-size: 0.8rem;
-		background: #e5e7eb;
-		color: #6b7280;
-	}
-
-	.status.online {
-		background: #d1fae5;
-		color: #065f46;
-	}
-
-	.empty {
-		color: #9ca3af;
-	}
-
-	ul {
-		list-style: none;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	li {
-		border: 1px solid #e5e7eb;
-		border-radius: 6px;
-		padding: 0.75rem 1rem;
-	}
-
-	.op {
-		font-weight: 600;
-		text-transform: uppercase;
-		font-size: 0.75rem;
-		margin-right: 0.5rem;
-	}
-
-	.coll {
-		color: #6b7280;
-		font-size: 0.85rem;
-	}
-
-	pre {
-		margin: 0.5rem 0 0;
-		font-size: 0.8rem;
-		white-space: pre-wrap;
-		word-break: break-word;
-	}
-</style>

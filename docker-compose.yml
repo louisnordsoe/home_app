@@ -1,0 +1,49 @@
+services:
+  mongo:
+    image: mongo:8
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  mongo-init:
+    image: mongo:8
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: "no"
+    entrypoint:
+      - mongosh
+      - --host
+      - mongo
+      - --eval
+      - |
+        try {
+          rs.status();
+          print('replica set already initialised');
+        } catch (_) {
+          rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongo:27017' }] });
+          print('replica set initialised');
+        }
+
+  app:
+    build: .
+    ports:
+      - "5173:5173"
+    env_file:
+      - docker.env
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.svelte-kit
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+
+volumes:
+  mongo_data:

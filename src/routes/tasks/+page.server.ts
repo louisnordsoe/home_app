@@ -169,7 +169,15 @@ export const actions: Actions = {
 				loggedAt: new Date()
 			});
 		} else {
-			await db.collection('task_logs').deleteOne({ taskId: tid, date: task.date as string });
+			const counter = task.hasCounter ? (task.counter as number) : 0;
+			if (counter > 0) {
+				await db.collection('task_logs').updateOne(
+					{ taskId: tid, date: task.date as string },
+					{ $set: { count: counter } }
+				);
+			} else {
+				await db.collection('task_logs').deleteOne({ taskId: tid, date: task.date as string });
+			}
 		}
 
 		return { success: true };
@@ -182,19 +190,45 @@ export const actions: Actions = {
 		const taskId = data.get('taskId') as string;
 		const delta = parseInt(data.get('delta') as string);
 		const homeId = new ObjectId(locals.user.homeId);
+		const tid = new ObjectId(taskId);
 
+		let updated;
 		if (delta === 1) {
-			await db
+			updated = await db
 				.collection('tasks')
-				.updateOne({ _id: new ObjectId(taskId), homeId }, { $inc: { counter: 1 } });
+				.findOneAndUpdate({ _id: tid, homeId }, { $inc: { counter: 1 } }, { returnDocument: 'after' });
 		} else if (delta === -1) {
-			await db
+			updated = await db
 				.collection('tasks')
-				.updateOne(
-					{ _id: new ObjectId(taskId), homeId, counter: { $gt: 0 } },
-					{ $inc: { counter: -1 } }
+				.findOneAndUpdate(
+					{ _id: tid, homeId, counter: { $gt: 0 } },
+					{ $inc: { counter: -1 } },
+					{ returnDocument: 'after' }
 				);
 		}
+
+		if (updated) {
+			const newCounter = updated.counter as number;
+			if (newCounter > 0) {
+				await db.collection('task_logs').updateOne(
+					{ taskId: tid, date: updated.date as string },
+					{
+						$set: {
+							homeId,
+							taskTitle: updated.title as string,
+							userEmail: locals.user.email,
+							count: newCounter,
+							date: updated.date as string,
+							loggedAt: new Date()
+						}
+					},
+					{ upsert: true }
+				);
+			} else if (!updated.done) {
+				await db.collection('task_logs').deleteOne({ taskId: tid, date: updated.date as string });
+			}
+		}
+
 		return { success: true };
 	},
 

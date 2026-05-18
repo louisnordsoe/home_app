@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { useLiveReload } from '$lib/useLiveReload';
 	import type { PageData } from './$types';
+
+	useLiveReload();
 
 	interface Props {
 		data: PageData;

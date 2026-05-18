@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { useLiveReload } from '$lib/useLiveReload';
 	import type { PageData } from './$types';
+
+	useLiveReload();
 
 	interface Props {
 		data: PageData;
@@ -9,7 +12,7 @@
 	let { data }: Props = $props();
 
 	let showAddForm = $state(false);
-	let addRecurring = $state(false);
+	let addRecurring = $state(true);
 	let recurringType = $state<'daily' | 'weekly'>('daily');
 
 	let editingId = $state<string | null>(null);
@@ -205,7 +208,7 @@
 							/>
 						</form>
 
-						{#if task.hasCounter && !task.done}
+						{#if task.hasCounter}
 							<div class="flex items-center gap-0.5 shrink-0">
 								<form method="POST" action="?/updateCounter" use:enhance>
 									<input type="hidden" name="taskId" value={task.id} />
@@ -228,10 +231,6 @@
 									>+</button>
 								</form>
 							</div>
-						{:else if task.hasCounter && task.done}
-							<span class="text-sm font-mono text-gray-400 shrink-0 tabular-nums"
-								>{task.counter}</span
-							>
 						{/if}
 
 						<div class="flex-1 min-w-0">
@@ -368,7 +367,7 @@
 						</select>
 					{/if}
 					<label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-						<input type="checkbox" name="hasCounter" class="w-4 h-4 accent-indigo-600" />
+						<input type="checkbox" name="hasCounter" checked class="w-4 h-4 accent-indigo-600" />
 						Track count
 					</label>
 					<div class="flex gap-2">
@@ -393,7 +392,6 @@
 						async ({ update }) => {
 							await update();
 							showAddForm = false;
-							addRecurring = false;
 						}}
 					class="flex flex-col gap-2"
 				>
@@ -437,7 +435,7 @@
 						</select>
 					{/if}
 					<label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-						<input type="checkbox" name="hasCounter" class="w-4 h-4 accent-indigo-600" />
+						<input type="checkbox" name="hasCounter" checked class="w-4 h-4 accent-indigo-600" />
 						Track count
 					</label>
 					<div class="flex gap-2">
@@ -448,10 +446,7 @@
 						>
 						<button
 							type="button"
-							onclick={() => {
-								showAddForm = false;
-								addRecurring = false;
-							}}
+							onclick={() => { showAddForm = false; }}
 							class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
 							>Cancel</button
 						>
@@ -461,7 +456,7 @@
 		</div>
 	{:else}
 		<button
-			onclick={() => (showAddForm = true)}
+			onclick={() => { showAddForm = true; addRecurring = true; }}
 			class="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-gray-200
 			       text-sm text-gray-400 hover:border-indigo-300 hover:text-indigo-500 transition-colors"
 		>

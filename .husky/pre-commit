@@ -15,3 +15,6 @@ npm run knip
 
 echo "› secretlint"
 npm run secrets
+
+echo "› playwright"
+npm test

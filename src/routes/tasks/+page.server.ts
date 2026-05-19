@@ -28,8 +28,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const todayStr = toDateStr(today);
 
 	const dateParam = url.searchParams.get('date');
-	const selectedDate =
-		dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : todayStr;
+	const selectedDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : todayStr;
 
 	const homeId = new ObjectId(locals.user.homeId);
 	const selectedDay = new Date(selectedDate + 'T00:00:00');
@@ -67,7 +66,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			title: t.title as string,
 			done: (t.done as boolean) ?? false,
 			assignedTo: (t.assignedTo as string | null) ?? null,
-			isRecurring: !!(t.recurringGroupId),
+			isRecurring: !!t.recurringGroupId,
 			recurringGroupId: (t.recurringGroupId as string | null) ?? null,
 			hasCounter: (t.hasCounter as boolean) ?? false,
 			counter: (t.counter as number) ?? 0
@@ -171,10 +170,9 @@ export const actions: Actions = {
 		} else {
 			const counter = task.hasCounter ? (task.counter as number) : 0;
 			if (counter > 0) {
-				await db.collection('task_logs').updateOne(
-					{ taskId: tid, date: task.date as string },
-					{ $set: { count: counter } }
-				);
+				await db
+					.collection('task_logs')
+					.updateOne({ taskId: tid, date: task.date as string }, { $set: { count: counter } });
 			} else {
 				await db.collection('task_logs').deleteOne({ taskId: tid, date: task.date as string });
 			}
@@ -196,7 +194,11 @@ export const actions: Actions = {
 		if (delta === 1) {
 			updated = await db
 				.collection('tasks')
-				.findOneAndUpdate({ _id: tid, homeId }, { $inc: { counter: 1 } }, { returnDocument: 'after' });
+				.findOneAndUpdate(
+					{ _id: tid, homeId },
+					{ $inc: { counter: 1 } },
+					{ returnDocument: 'after' }
+				);
 		} else if (delta === -1) {
 			updated = await db
 				.collection('tasks')

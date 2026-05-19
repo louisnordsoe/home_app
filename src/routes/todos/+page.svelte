@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '$lib/enhance';
 	import { useLiveReload } from '$lib/useLiveReload';
 	import type { PageData } from './$types';
 
@@ -33,8 +33,9 @@
 </script>
 
 <main class="max-w-3xl mx-auto px-4 py-6 flex flex-col gap-4">
-	<h1 class="text-base font-semibold text-gray-900">To-do list</h1>
+	<h1 class="text-base font-medium text-on-surface">To-do list</h1>
 
+	<!-- Add form -->
 	<form
 		method="POST"
 		action="?/add"
@@ -44,47 +45,46 @@
 				newTitle = '';
 				newAssignedTo = '';
 			}}
-		class="bg-white rounded-xl border border-gray-200 px-4 py-3 flex flex-col gap-2"
+		class="bg-surface rounded-[28px] shadow-sm px-5 py-4 flex flex-col gap-3"
 	>
-		<div class="flex gap-2">
-			<input
-				name="title"
-				type="text"
-				placeholder="Add a to-do…"
-				bind:value={newTitle}
-				required
-				class="flex-1 text-sm rounded-lg border border-gray-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-			/>
-			<button
-				type="submit"
-				class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700 transition-colors shrink-0"
-			>
-				Add
-			</button>
-		</div>
+		<md-outlined-text-field
+			name="title"
+			label="Add a to-do…"
+			value={newTitle}
+			oninput={(e: any) => (newTitle = e.currentTarget.value)}
+			required
+			style="width: 100%"
+		></md-outlined-text-field>
 		{#if data.members.length > 0}
-			<select
+			<md-outlined-select
 				name="assignedTo"
-				bind:value={newAssignedTo}
-				class="text-sm rounded-lg border border-gray-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+				label="Assigned to"
+				value={newAssignedTo}
+				onchange={(e: any) => (newAssignedTo = e.currentTarget.value)}
+				style="width: 100%"
 			>
-				<option value="">Unassigned</option>
-				{#each data.members as m}
-					<option value={m.email}>{m.email}</option>
+				<md-select-option value="" selected={newAssignedTo === ''}>Unassigned</md-select-option>
+				{#each data.members as m (m.email)}
+					<md-select-option value={m.email} selected={newAssignedTo === m.email}
+						>{m.email}</md-select-option
+					>
 				{/each}
-			</select>
+			</md-outlined-select>
 		{/if}
+		<div class="flex justify-end">
+			<md-filled-button type="submit">Add</md-filled-button>
+		</div>
 	</form>
 
 	{#if data.todos.length === 0}
-		<div class="flex flex-col items-center justify-center py-12 text-gray-400 gap-2">
+		<div class="flex flex-col items-center justify-center py-12 text-on-surface-variant gap-2">
 			<span class="material-symbols-outlined text-4xl">checklist</span>
 			<p class="text-sm">No to-dos yet</p>
 		</div>
 	{:else}
 		<ul class="flex flex-col gap-2">
 			{#each data.todos as todo (todo.id)}
-				<li class="bg-white rounded-xl border border-gray-200 px-4 py-3">
+				<li class="bg-surface rounded-[28px] shadow-sm px-4 py-3">
 					{#if editingId === todo.id}
 						<form
 							method="POST"
@@ -94,57 +94,52 @@
 									await update();
 									editingId = null;
 								}}
-							class="flex flex-col gap-2"
+							class="flex flex-col gap-3"
 						>
 							<input type="hidden" name="todoId" value={todo.id} />
-							<input
+							<md-outlined-text-field
 								name="title"
-								type="text"
-								bind:value={editTitle}
-								class="text-sm rounded-lg border border-gray-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-							/>
+								label="Title"
+								value={editTitle}
+								oninput={(e: any) => (editTitle = e.currentTarget.value)}
+								style="width: 100%"
+							></md-outlined-text-field>
 							{#if data.members.length > 0}
-								<select
+								<md-outlined-select
 									name="assignedTo"
-									bind:value={editAssignedTo}
-									class="text-sm rounded-lg border border-gray-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+									label="Assigned to"
+									value={editAssignedTo}
+									onchange={(e: any) => (editAssignedTo = e.currentTarget.value)}
+									style="width: 100%"
 								>
-									<option value="">Unassigned</option>
-									{#each data.members as m}
-										<option value={m.email}>{m.email}</option>
+									<md-select-option value="" selected={editAssignedTo === ''}
+										>Unassigned</md-select-option
+									>
+									{#each data.members as m (m.email)}
+										<md-select-option value={m.email} selected={editAssignedTo === m.email}
+											>{m.email}</md-select-option
+										>
 									{/each}
-								</select>
+								</md-outlined-select>
 							{/if}
 							<div class="flex gap-2">
-								<button
-									type="submit"
-									class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700 transition-colors"
-									>Save</button
-								>
-								<button
-									type="button"
-									onclick={cancelEdit}
-									class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-									>Cancel</button
-								>
+								<md-filled-button type="submit">Save</md-filled-button>
+								<md-outlined-button type="button" onclick={cancelEdit}>Cancel</md-outlined-button>
 							</div>
 						</form>
 					{:else if deleteConfirmId === todo.id}
-						<div class="flex items-center gap-3">
-							<p class="text-sm text-gray-700 flex-1">Delete this to-do?</p>
+						<div class="flex items-center gap-3 flex-wrap">
+							<p class="text-sm text-on-surface flex-1">Delete this to-do?</p>
 							<form method="POST" action="?/delete" use:enhance>
 								<input type="hidden" name="todoId" value={todo.id} />
-								<button
+								<md-filled-button
 									type="submit"
-									class="px-3 py-1.5 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700 transition-colors"
-									>Delete</button
+									style="--md-filled-button-container-color: var(--md-sys-color-error); --md-filled-button-label-text-color: var(--md-sys-color-on-error);"
+									>Delete</md-filled-button
 								>
 							</form>
-							<button
-								type="button"
-								onclick={() => (deleteConfirmId = null)}
-								class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-								>Cancel</button
+							<md-outlined-button type="button" onclick={() => (deleteConfirmId = null)}
+								>Cancel</md-outlined-button
 							>
 						</div>
 					{:else}
@@ -152,38 +147,40 @@
 							<form method="POST" action="?/toggle" use:enhance>
 								<input type="hidden" name="todoId" value={todo.id} />
 								<input type="hidden" name="done" value={(!todo.done).toString()} />
-								<input
-									type="checkbox"
+								<md-checkbox
 									checked={todo.done}
-									class="w-5 h-5 cursor-pointer accent-indigo-600 shrink-0"
-									onchange={(e) => e.currentTarget.closest('form')?.requestSubmit()}
-								/>
+									onchange={(e: any) => e.currentTarget.closest('form')?.requestSubmit()}
+								></md-checkbox>
 							</form>
 
 							<div class="flex-1 min-w-0">
-								<span class="text-sm {todo.done ? 'line-through text-gray-400' : 'text-gray-800'}">
+								<span
+									class="text-sm {todo.done
+										? 'line-through text-on-surface-variant'
+										: 'text-on-surface'}"
+								>
 									{todo.title}
 								</span>
 								{#if todo.assignedTo}
-									<p class="text-xs text-gray-400 mt-0.5">{todo.assignedTo}</p>
+									<p class="text-xs text-on-surface-variant mt-0.5">{todo.assignedTo}</p>
 								{/if}
 							</div>
 
-							<div class="flex items-center gap-1 shrink-0">
-								<button
+							<div class="flex items-center gap-0.5 shrink-0">
+								<!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
+								<md-icon-button
 									onclick={() => startEdit(todo.id, todo.title, todo.assignedTo)}
-									class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
 									aria-label="Edit"
 								>
 									<span class="material-symbols-outlined text-base">edit</span>
-								</button>
-								<button
-									onclick={() => (deleteConfirmId = todo.id)}
-									class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-									aria-label="Delete"
-								>
-									<span class="material-symbols-outlined text-base">delete</span>
-								</button>
+								</md-icon-button>
+								<!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
+								<md-icon-button onclick={() => (deleteConfirmId = todo.id)} aria-label="Delete">
+									<span
+										class="material-symbols-outlined text-base"
+										style="color: var(--color-error)">delete</span
+									>
+								</md-icon-button>
 							</div>
 						</div>
 					{/if}

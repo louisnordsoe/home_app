@@ -1,1 +1,191 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+/* ─── MD3 Color Tokens ─────────────────────────────────────────────────── */
+@theme {
+	--color-primary: #4355b9;
+	--color-on-primary: #ffffff;
+	--color-primary-container: #dde1ff;
+	--color-on-primary-container: #00105c;
+	--color-secondary-container: #e2e3ff;
+	--color-on-secondary-container: #191b38;
+	--color-error: #ba1a1a;
+	--color-on-error: #ffffff;
+	--color-error-container: #ffdad6;
+	--color-on-error-container: #410002;
+	--color-background: #fffbff;
+	--color-on-background: #1b1b1f;
+	--color-surface: #fffbff;
+	--color-on-surface: #1b1b1f;
+	--color-surface-variant: #e3e1ec;
+	--color-on-surface-variant: #46464f;
+	--color-outline: #777680;
+	--color-outline-variant: #c7c5d0;
+	--color-surface-container-low: #f5f0fb;
+	--color-surface-container: #f0ebf5;
+	--color-surface-container-high: #eae5f0;
+	--color-surface-container-highest: #e4e0eb;
+}
+
+:root {
+	/* Aliases used by @material/web components */
+	--md-sys-color-primary: var(--color-primary);
+	--md-sys-color-on-primary: var(--color-on-primary);
+	--md-sys-color-primary-container: var(--color-primary-container);
+	--md-sys-color-on-primary-container: var(--color-on-primary-container);
+	--md-sys-color-secondary: #5c5f7e;
+	--md-sys-color-on-secondary: #ffffff;
+	--md-sys-color-secondary-container: var(--color-secondary-container);
+	--md-sys-color-on-secondary-container: var(--color-on-secondary-container);
+	--md-sys-color-error: var(--color-error);
+	--md-sys-color-on-error: var(--color-on-error);
+	--md-sys-color-error-container: var(--color-error-container);
+	--md-sys-color-on-error-container: var(--color-on-error-container);
+	--md-sys-color-background: var(--color-background);
+	--md-sys-color-on-background: var(--color-on-background);
+	--md-sys-color-surface: var(--color-surface);
+	--md-sys-color-on-surface: var(--color-on-surface);
+	--md-sys-color-surface-variant: var(--color-surface-variant);
+	--md-sys-color-on-surface-variant: var(--color-on-surface-variant);
+	--md-sys-color-outline: var(--color-outline);
+	--md-sys-color-outline-variant: var(--color-outline-variant);
+	--md-sys-color-surface-container-low: var(--color-surface-container-low);
+	--md-sys-color-surface-container: var(--color-surface-container);
+	--md-sys-color-surface-container-high: var(--color-surface-container-high);
+	--md-sys-color-surface-container-highest: var(--color-surface-container-highest);
+	--md-sys-color-scrim: #000000;
+	--md-sys-color-shadow: #000000;
+	--md-sys-color-inverse-surface: #303033;
+	--md-sys-color-inverse-on-surface: #f3eff4;
+	--md-sys-color-inverse-primary: #bbc3ff;
+
+	font-family: 'Roboto', sans-serif;
+}
+
+/* ─── Fallback styles before @material/web registers ───────────────────── */
+md-filled-button:not(:defined) {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 40px;
+	padding: 0 24px;
+	border-radius: 9999px;
+	background: var(--color-primary);
+	color: var(--color-on-primary);
+	font-size: 0.875rem;
+	font-weight: 500;
+	border: none;
+	cursor: pointer;
+}
+
+md-outlined-button:not(:defined) {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 40px;
+	padding: 0 24px;
+	border-radius: 9999px;
+	background: transparent;
+	color: var(--color-primary);
+	border: 1px solid var(--color-outline);
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+md-text-button:not(:defined) {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 40px;
+	padding: 0 12px;
+	border-radius: 9999px;
+	background: transparent;
+	color: var(--color-primary);
+	border: none;
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+md-filled-tonal-button:not(:defined) {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 40px;
+	padding: 0 24px;
+	border-radius: 9999px;
+	background: var(--color-secondary-container);
+	color: var(--color-on-secondary-container);
+	border: none;
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+md-icon-button:not(:defined) {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 9999px;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	color: var(--color-on-surface-variant);
+}
+
+md-outlined-text-field:not(:defined) {
+	display: block;
+	height: 56px;
+	border: 1px solid var(--color-outline);
+	border-radius: 4px;
+	width: 100%;
+}
+
+md-outlined-select:not(:defined) {
+	display: block;
+	height: 56px;
+	border: 1px solid var(--color-outline);
+	border-radius: 4px;
+	width: 100%;
+}
+
+md-checkbox:not(:defined) {
+	display: inline-block;
+	width: 18px;
+	height: 18px;
+	border: 2px solid var(--color-outline);
+	border-radius: 2px;
+	flex-shrink: 0;
+}
+
+md-radio:not(:defined) {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	border: 2px solid var(--color-outline);
+	border-radius: 9999px;
+	flex-shrink: 0;
+}
+
+/* ─── Native date input styled to match MD3 text fields ────────────────── */
+.md3-date-input {
+	height: 56px;
+	padding: 0 16px;
+	border: 1px solid var(--color-outline);
+	border-radius: 4px;
+	font-size: 1rem;
+	font-family: inherit;
+	background: transparent;
+	color: var(--color-on-surface);
+	outline: none;
+	transition:
+		border-color 150ms,
+		border-width 150ms;
+	box-sizing: border-box;
+}
+.md3-date-input:focus {
+	border: 2px solid var(--color-primary);
+	padding: 0 15px;
+}

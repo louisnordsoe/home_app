@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import favicon from '$lib/assets/favicon.svg';
 	import { page } from '$app/stores';
-	import { enhance } from '$app/forms';
+	import { enhance } from '$lib/enhance';
 	import '../app.css';
 	import type { LayoutData } from './$types';
 	import type { Snippet } from 'svelte';
@@ -20,6 +21,16 @@
 		{ href: '/todos', label: 'To-do', icon: 'checklist' },
 		{ href: '/stats', label: 'Stats', icon: 'bar_chart' }
 	];
+
+	let menuOpen = $state(false);
+
+	onMount(() => {
+		import('$lib/md3');
+	});
+
+	function closeMenu() {
+		menuOpen = false;
+	}
 </script>
 
 <svelte:head>
@@ -27,41 +38,73 @@
 </svelte:head>
 
 {#if data.user?.homeId}
-	<div class="min-h-screen bg-gray-50 flex flex-col">
-		<header class="bg-white border-b border-gray-200">
-			<div class="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+	<div class="min-h-screen bg-background flex flex-col">
+		<!-- MD3 Top App Bar (small) -->
+		<header class="bg-surface-container relative z-20">
+			<div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
 				<div class="flex items-center gap-2">
-					<span class="material-symbols-outlined text-indigo-600">home</span>
-					<span class="font-semibold text-gray-900">{data.homeName ?? 'Home'}</span>
+					<span class="material-symbols-outlined text-primary">home</span>
+					<span class="font-medium text-on-surface">{data.homeName ?? 'Home'}</span>
 				</div>
-				<div class="flex items-center gap-3">
-					<span class="text-sm text-gray-400 hidden sm:block">{data.user.email}</span>
-					<form method="POST" action="/logout" use:enhance>
-						<button
-							type="submit"
-							class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+				<!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
+				<md-icon-button onclick={() => (menuOpen = !menuOpen)} aria-label="Toggle menu">
+					<span class="material-symbols-outlined">{menuOpen ? 'close' : 'menu'}</span>
+				</md-icon-button>
+			</div>
+		</header>
+
+		{#if menuOpen}
+			<!-- Scrim -->
+			<div
+				class="fixed inset-0 z-40"
+				style="background: rgba(0,0,0,0.32)"
+				role="presentation"
+				onclick={closeMenu}
+				onkeydown={(e) => e.key === 'Escape' && closeMenu()}
+			></div>
+
+			<!-- MD3 Modal Navigation Drawer (right side) -->
+			<div
+				class="fixed top-0 right-0 bottom-0 z-50 w-80 flex flex-col shadow-xl bg-surface-container-low"
+				style="border-radius: 28px 0 0 28px"
+			>
+				<div class="h-16 flex items-center justify-end px-4">
+					<!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
+					<md-icon-button onclick={closeMenu} aria-label="Close menu">
+						<span class="material-symbols-outlined">close</span>
+					</md-icon-button>
+				</div>
+
+				<div class="px-6 pb-5 flex items-center gap-3">
+					<span class="material-symbols-outlined text-primary">home</span>
+					<span class="font-medium text-on-surface">{data.homeName ?? 'Home'}</span>
+				</div>
+
+				<nav class="flex-1 px-3 flex flex-col gap-0.5 overflow-y-auto">
+					{#each navLinks as link (link.href)}
+						<a
+							href={link.href}
+							onclick={closeMenu}
+							class="flex items-center gap-3 px-4 h-14 rounded-full text-sm no-underline transition-colors
+							       {$page.url.pathname === link.href
+								? 'bg-secondary-container text-on-secondary-container font-medium'
+								: 'text-on-surface-variant hover:bg-surface-container-high'}"
 						>
-							<span class="material-symbols-outlined text-base">logout</span>
-							<span class="hidden sm:block">Log out</span>
-						</button>
+							<span class="material-symbols-outlined text-xl">{link.icon}</span>
+							{link.label}
+						</a>
+					{/each}
+				</nav>
+
+				<div class="px-6 py-4 border-t border-outline-variant">
+					<p class="text-xs text-on-surface-variant mb-3 truncate">{data.user.email}</p>
+					<form method="POST" action="/logout" use:enhance>
+						<md-text-button type="submit">Log out</md-text-button>
 					</form>
 				</div>
 			</div>
-			<nav class="max-w-3xl mx-auto px-4 flex gap-1 pb-2">
-				{#each navLinks as link}
-					<a
-						href={link.href}
-						class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors
-						       {$page.url.pathname === link.href
-							       ? 'bg-indigo-50 text-indigo-700 font-medium'
-							       : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'}"
-					>
-						<span class="material-symbols-outlined text-base">{link.icon}</span>
-						{link.label}
-					</a>
-				{/each}
-			</nav>
-		</header>
+		{/if}
+
 		<div class="flex-1">
 			{@render children()}
 		</div>

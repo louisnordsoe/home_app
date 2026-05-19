@@ -106,11 +106,9 @@ export const actions: Actions = {
 		if (!meal) {
 			await db.collection('meal_plans').deleteOne({ homeId, date });
 		} else {
-			await db.collection('meal_plans').updateOne(
-				{ homeId, date },
-				{ $set: { homeId, date, meal } },
-				{ upsert: true }
-			);
+			await db
+				.collection('meal_plans')
+				.updateOne({ homeId, date }, { $set: { homeId, date, meal } }, { upsert: true });
 		}
 
 		return { success: true };

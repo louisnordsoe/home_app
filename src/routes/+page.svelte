@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { enhance } from '$app/forms';
-	import { changes, connected, type ChangeEvent } from '$lib/stores';
+	import { invalidateAll } from '$app/navigation';
+	import { connected } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -14,12 +14,14 @@
 	let copied = $state(false);
 
 	onMount(() => {
-		eventSource = new EventSource('/api/changes');
+		eventSource = new EventSource('/api/watch');
 		eventSource.onopen = () => connected.set(true);
 		eventSource.onmessage = (event) => {
-			const payload = JSON.parse(event.data) as ChangeEvent & { type?: string };
+			const payload = JSON.parse(event.data) as { type?: string; coll?: string; op?: string };
 			if (payload.type === 'connected') return;
-			changes.update((prev) => [payload, ...prev].slice(0, 50));
+			if (payload.coll === 'task_logs' && payload.op === 'insert') {
+				invalidateAll();
+			}
 		};
 		eventSource.onerror = () => connected.set(false);
 	});
@@ -35,68 +37,77 @@
 		copied = true;
 		setTimeout(() => (copied = false), 2000);
 	}
+
+	function formatDateTime(iso: string) {
+		const d = new Date(iso);
+		return d.toLocaleString(undefined, {
+			month: 'short',
+			day: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit'
+		});
+	}
 </script>
 
 <main class="max-w-3xl mx-auto px-4 py-6 flex flex-col gap-6">
 	{#if data.home}
-		<div
-			class="bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between gap-4"
-		>
+		<div class="bg-surface rounded-[28px] shadow-sm p-5 flex items-center justify-between gap-4">
 			<div>
-				<p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Invite code</p>
-				<p class="mt-0.5 text-lg font-mono font-semibold text-gray-900 tracking-widest">
+				<p class="text-xs font-medium text-on-surface-variant uppercase tracking-wide mb-1">
+					Invite code
+				</p>
+				<p class="text-xl font-mono font-semibold text-on-surface tracking-widest">
 					{data.home.inviteCode}
 				</p>
-				<p class="text-xs text-gray-400 mt-0.5">Share this code to let others join your home</p>
+				<p class="text-xs text-on-surface-variant mt-0.5">
+					Share this code to let others join your home
+				</p>
 			</div>
-			<button
+			<md-filled-tonal-button
 				onclick={copyInviteCode}
-				class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200
-				       text-sm text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
+				style="--md-filled-tonal-button-with-leading-icon-leading-space: 20px; --md-filled-tonal-button-trailing-space: 20px; min-width: 110px;"
 			>
-				<span class="material-symbols-outlined text-base">
+				<span class="material-symbols-outlined text-base" slot="icon">
 					{copied ? 'check' : 'content_copy'}
 				</span>
 				{copied ? 'Copied!' : 'Copy'}
-			</button>
+			</md-filled-tonal-button>
 		</div>
 	{/if}
 
 	<div class="flex items-center gap-3">
-		<h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Activity feed</h2>
+		<h2 class="text-xs font-medium text-on-surface-variant uppercase tracking-wide">
+			Recent activity
+		</h2>
 		<span
-			class="px-2 py-0.5 rounded-full text-xs font-medium
-			       {$connected ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'}"
+			class="px-2.5 py-0.5 rounded-full text-xs font-medium
+			       {$connected
+				? 'bg-primary-container text-on-primary-container'
+				: 'bg-surface-container-highest text-on-surface-variant'}"
 		>
 			{$connected ? 'Live' : 'Connecting…'}
 		</span>
 	</div>
 
-	{#if $changes.length === 0}
-		<div class="flex flex-col items-center justify-center py-16 text-gray-400 gap-2">
-			<span class="material-symbols-outlined text-4xl">sensors</span>
-			<p class="text-sm">Waiting for database changes…</p>
+	{#if data.recentActivity.length === 0}
+		<div class="flex flex-col items-center justify-center py-16 text-on-surface-variant gap-2">
+			<span class="material-symbols-outlined text-4xl">pending_actions</span>
+			<p class="text-sm">No activity yet</p>
 		</div>
 	{:else}
 		<ul class="flex flex-col gap-2">
-			{#each $changes as change (change.wallTime ?? Math.random())}
-				<li class="bg-white border border-gray-200 rounded-xl px-4 py-3">
-					<div class="flex items-center gap-2 mb-1">
-						<span class="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-							{change.operationType}
-						</span>
-						<span class="text-xs text-gray-400">{change.ns?.coll}</span>
-						{#if change.wallTime}
-							<span class="text-xs text-gray-300 ml-auto">
-								{new Date(change.wallTime).toLocaleTimeString()}
-							</span>
-						{/if}
+			{#each data.recentActivity as log (log.loggedAt + log.userEmail + log.taskTitle)}
+				<li class="bg-surface rounded-[28px] shadow-sm px-5 py-3 flex items-center gap-3">
+					<span class="material-symbols-outlined text-xl text-primary shrink-0">task_alt</span>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-on-surface truncate">
+							{log.taskTitle}{log.count > 1 ? ` ×${log.count}` : ''}
+						</p>
+						<p class="text-xs text-on-surface-variant">{log.userEmail}</p>
 					</div>
-					<pre class="text-xs whitespace-pre-wrap break-words text-gray-600">{JSON.stringify(
-							change.fullDocument ?? change.documentKey,
-							null,
-							2
-						)}</pre>
+					<span class="text-xs text-on-surface-variant opacity-60 shrink-0">
+						{formatDateTime(log.loggedAt)}
+					</span>
 				</li>
 			{/each}
 		</ul>

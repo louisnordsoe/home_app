@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '$lib/enhance';
 	import { useLiveReload } from '$lib/useLiveReload';
 	import type { PageData } from './$types';
 
@@ -23,12 +23,7 @@
 	let deleteConfirmId = $state<string | null>(null);
 	let bumpPromptId = $state<string | null>(null);
 
-	function startEdit(
-		id: string,
-		title: string,
-		assignedTo: string | null,
-		hasCounter: boolean
-	) {
+	function startEdit(id: string, title: string, assignedTo: string | null, hasCounter: boolean) {
 		editingId = id;
 		editTitle = title;
 		editAssignedTo = assignedTo ?? '';
@@ -44,11 +39,11 @@
 
 <main class="max-w-3xl mx-auto px-4 py-6 flex flex-col gap-4">
 	<div class="flex items-center justify-between gap-4">
-		<h1 class="text-base font-semibold text-gray-900">{data.dayLabel}</h1>
+		<h1 class="text-base font-medium text-on-surface">{data.dayLabel}</h1>
 		<div class="flex items-center gap-1 shrink-0">
 			<a
 				href="/tasks?date={data.prevDate}"
-				class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+				class="flex items-center justify-center w-10 h-10 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors"
 				aria-label="Previous day"
 			>
 				<span class="material-symbols-outlined text-xl leading-none">chevron_left</span>
@@ -56,14 +51,14 @@
 			{#if !data.isToday}
 				<a
 					href="/tasks"
-					class="px-2.5 py-1 text-xs rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
+					class="px-3 py-1.5 text-xs rounded-full bg-secondary-container text-on-secondary-container font-medium hover:opacity-90 transition-opacity"
 				>
 					Today
 				</a>
 			{/if}
 			<a
 				href="/tasks?date={data.nextDate}"
-				class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+				class="flex items-center justify-center w-10 h-10 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors"
 				aria-label="Next day"
 			>
 				<span class="material-symbols-outlined text-xl leading-none">chevron_right</span>
@@ -72,7 +67,7 @@
 	</div>
 
 	{#if data.tasks.length === 0 && !showAddForm}
-		<div class="flex flex-col items-center justify-center py-12 text-gray-400 gap-2">
+		<div class="flex flex-col items-center justify-center py-12 text-on-surface-variant gap-2">
 			<span class="material-symbols-outlined text-4xl">task_alt</span>
 			<p class="text-sm">No tasks for this day</p>
 		</div>
@@ -80,7 +75,7 @@
 
 	<ul class="flex flex-col gap-2">
 		{#each data.tasks as task (task.id)}
-			<li class="bg-white rounded-xl border border-gray-200 px-4 py-3">
+			<li class="bg-surface rounded-[28px] shadow-sm px-4 py-3">
 				{#if editingId === task.id}
 					<form
 						method="POST"
@@ -90,65 +85,61 @@
 								await update();
 								editingId = null;
 							}}
-						class="flex flex-col gap-2"
+						class="flex flex-col gap-3"
 					>
 						<input type="hidden" name="taskId" value={task.id} />
-						<input
+						<md-outlined-text-field
 							name="title"
-							type="text"
-							bind:value={editTitle}
-							class="text-sm rounded-lg border border-gray-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-						/>
+							label="Title"
+							value={editTitle}
+							oninput={(e: any) => (editTitle = e.currentTarget.value)}
+							style="width: 100%"
+						></md-outlined-text-field>
 						{#if data.members.length > 0}
-							<select
+							<md-outlined-select
 								name="assignedTo"
-								bind:value={editAssignedTo}
-								class="text-sm rounded-lg border border-gray-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+								label="Assigned to"
+								value={editAssignedTo}
+								onchange={(e: any) => (editAssignedTo = e.currentTarget.value)}
+								style="width: 100%"
 							>
-								<option value="">Unassigned</option>
-								{#each data.members as m}
-									<option value={m.email}>{m.email}</option>
+								<md-select-option value="" selected={editAssignedTo === ''}
+									>Unassigned</md-select-option
+								>
+								{#each data.members as m (m.email)}
+									<md-select-option value={m.email} selected={editAssignedTo === m.email}
+										>{m.email}</md-select-option
+									>
 								{/each}
-							</select>
+							</md-outlined-select>
 						{/if}
-						<label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-							<input
-								type="checkbox"
+						<label class="flex items-center gap-3 text-sm text-on-surface-variant cursor-pointer">
+							<md-checkbox
 								name="hasCounter"
-								bind:checked={editHasCounter}
-								class="w-4 h-4 accent-indigo-600"
-							/>
+								checked={editHasCounter}
+								onchange={(e: any) => (editHasCounter = e.currentTarget.checked)}
+							></md-checkbox>
 							Track count
 						</label>
 						<div class="flex gap-2">
-							<button
-								type="submit"
-								class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700 transition-colors"
-								>Save</button
-							>
-							<button
-								type="button"
-								onclick={cancelEdit}
-								class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-								>Cancel</button
-							>
+							<md-filled-button type="submit">Save</md-filled-button>
+							<md-outlined-button type="button" onclick={cancelEdit}>Cancel</md-outlined-button>
 						</div>
 					</form>
 				{:else if deleteConfirmId === task.id}
-					<div class="flex flex-col gap-2">
-						<p class="text-sm text-gray-700">
+					<div class="flex flex-col gap-3">
+						<p class="text-sm text-on-surface">
 							{task.isRecurring ? 'Delete just this day or all occurrences?' : 'Delete this task?'}
 						</p>
 						<div class="flex gap-2 flex-wrap">
 							{#if task.isRecurring}
 								<form method="POST" action="?/deleteTask" use:enhance>
 									<input type="hidden" name="taskId" value={task.id} />
-									<button
+									<md-filled-tonal-button
 										type="submit"
-										class="px-3 py-1.5 rounded-lg bg-red-50 text-red-700 text-sm hover:bg-red-100 transition-colors border border-red-200"
+										style="--md-filled-tonal-button-container-color: var(--md-sys-color-error-container); --md-filled-tonal-button-label-text-color: var(--md-sys-color-on-error-container);"
+										>This day only</md-filled-tonal-button
 									>
-										This day only
-									</button>
 								</form>
 								<form
 									method="POST"
@@ -160,29 +151,24 @@
 										}}
 								>
 									<input type="hidden" name="recurringGroupId" value={task.recurringGroupId} />
-									<button
+									<md-filled-button
 										type="submit"
-										class="px-3 py-1.5 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700 transition-colors"
+										style="--md-filled-button-container-color: var(--md-sys-color-error); --md-filled-button-label-text-color: var(--md-sys-color-on-error);"
+										>All occurrences</md-filled-button
 									>
-										All occurrences
-									</button>
 								</form>
 							{:else}
 								<form method="POST" action="?/deleteTask" use:enhance>
 									<input type="hidden" name="taskId" value={task.id} />
-									<button
+									<md-filled-button
 										type="submit"
-										class="px-3 py-1.5 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700 transition-colors"
+										style="--md-filled-button-container-color: var(--md-sys-color-error); --md-filled-button-label-text-color: var(--md-sys-color-on-error);"
+										>Delete</md-filled-button
 									>
-										Delete
-									</button>
 								</form>
 							{/if}
-							<button
-								type="button"
-								onclick={() => (deleteConfirmId = null)}
-								class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-								>Cancel</button
+							<md-outlined-button type="button" onclick={() => (deleteConfirmId = null)}
+								>Cancel</md-outlined-button
 							>
 						</div>
 					</div>
@@ -191,11 +177,9 @@
 						<form method="POST" action="?/toggle" use:enhance>
 							<input type="hidden" name="taskId" value={task.id} />
 							<input type="hidden" name="done" value={(!task.done).toString()} />
-							<input
-								type="checkbox"
+							<md-checkbox
 								checked={task.done}
-								class="w-5 h-5 cursor-pointer accent-indigo-600 shrink-0"
-								onchange={(e) => {
+								onchange={(e: any) => {
 									const checking = !task.done;
 									if (checking && task.hasCounter && task.counter === 0) {
 										e.currentTarget.checked = false;
@@ -205,7 +189,7 @@
 										e.currentTarget.closest('form')?.requestSubmit();
 									}
 								}}
-							/>
+							></md-checkbox>
 						</form>
 
 						{#if task.hasCounter}
@@ -216,10 +200,11 @@
 									<button
 										type="submit"
 										disabled={task.counter === 0}
-										class="w-7 h-7 rounded text-lg leading-none text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-30 transition-colors"
-									>−</button>
+										class="w-8 h-8 rounded-full text-lg leading-none text-on-surface-variant hover:bg-surface-container-high disabled:opacity-30 transition-colors"
+										>−</button
+									>
 								</form>
-								<span class="w-7 text-center text-sm font-mono text-gray-700 tabular-nums"
+								<span class="w-8 text-center text-sm font-mono text-on-surface tabular-nums"
 									>{task.counter}</span
 								>
 								<form method="POST" action="?/updateCounter" use:enhance>
@@ -227,53 +212,60 @@
 									<input type="hidden" name="delta" value="1" />
 									<button
 										type="submit"
-										class="w-7 h-7 rounded text-lg leading-none text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-									>+</button>
+										class="w-8 h-8 rounded-full text-lg leading-none text-on-surface-variant hover:bg-surface-container-high transition-colors"
+										>+</button
+									>
 								</form>
 							</div>
 						{/if}
 
 						<div class="flex-1 min-w-0">
-							<span class="text-sm {task.done ? 'line-through text-gray-400' : 'text-gray-800'}">
+							<span
+								class="text-sm {task.done
+									? 'line-through text-on-surface-variant'
+									: 'text-on-surface'}"
+							>
 								{task.title}
 							</span>
 							<div class="flex items-center gap-2 mt-0.5">
 								{#if task.isRecurring}
-									<span class="flex items-center gap-0.5 text-xs text-indigo-500">
+									<span class="flex items-center gap-0.5 text-xs text-primary">
 										<span class="material-symbols-outlined text-xs leading-none">repeat</span>
 										Recurring
 									</span>
 								{/if}
 								{#if task.assignedTo}
-									<span class="text-xs text-gray-400">{task.assignedTo}</span>
+									<span class="text-xs text-on-surface-variant">{task.assignedTo}</span>
 								{/if}
 							</div>
 						</div>
 
-						<div class="flex items-center gap-1 shrink-0">
-							<button
+						<div class="flex items-center gap-0.5 shrink-0">
+							<!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
+							<md-icon-button
 								onclick={() => startEdit(task.id, task.title, task.assignedTo, task.hasCounter)}
-								class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
 								aria-label="Edit task"
 							>
 								<span class="material-symbols-outlined text-base">edit</span>
-							</button>
-							<button
+							</md-icon-button>
+							<!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
+							<md-icon-button
 								onclick={() => {
 									deleteConfirmId = task.id;
 									bumpPromptId = null;
 								}}
-								class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
 								aria-label="Delete task"
 							>
-								<span class="material-symbols-outlined text-base">delete</span>
-							</button>
+								<span class="material-symbols-outlined text-base" style="color: var(--color-error)"
+									>delete</span
+								>
+							</md-icon-button>
 						</div>
 					</div>
 
 					{#if bumpPromptId === task.id}
 						<div
-							class="mt-2 flex items-center gap-2 flex-wrap bg-amber-50 rounded-lg px-3 py-2 border border-amber-200"
+							class="mt-2 flex items-center gap-2 flex-wrap bg-amber-50 rounded-[14px] px-3 py-2 border border-amber-200"
 						>
 							<span class="text-sm text-amber-800 mr-1">Counter is 0 — bump to 1?</span>
 							<form
@@ -290,7 +282,7 @@
 								<input type="hidden" name="bumpCounter" value="true" />
 								<button
 									type="submit"
-									class="px-2.5 py-1 rounded-lg bg-amber-600 text-white text-xs hover:bg-amber-700 transition-colors"
+									class="px-3 py-1 rounded-full bg-amber-600 text-white text-xs font-medium hover:bg-amber-700 transition-colors"
 									>Yes, bump to 1</button
 								>
 							</form>
@@ -308,13 +300,13 @@
 								<input type="hidden" name="bumpCounter" value="false" />
 								<button
 									type="submit"
-									class="px-2.5 py-1 rounded-lg border border-amber-300 text-amber-800 text-xs hover:bg-amber-100 transition-colors"
+									class="px-3 py-1 rounded-full border border-amber-300 text-amber-800 text-xs font-medium hover:bg-amber-100 transition-colors"
 									>No, just done</button
 								>
 							</form>
 							<button
 								onclick={() => (bumpPromptId = null)}
-								class="ml-auto text-amber-400 hover:text-amber-600 transition-colors"
+								class="ml-auto w-8 h-8 rounded-full flex items-center justify-center text-amber-400 hover:text-amber-600 hover:bg-amber-100 transition-colors"
 								aria-label="Dismiss"
 							>
 								<span class="material-symbols-outlined text-base leading-none">close</span>
@@ -327,11 +319,14 @@
 	</ul>
 
 	{#if showAddForm}
-		<div class="bg-white rounded-xl border border-gray-200 px-4 py-4">
-			<div class="flex items-center justify-between mb-3">
-				<h2 class="text-sm font-medium text-gray-700">Add task</h2>
-				<label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-					<input type="checkbox" bind:checked={addRecurring} class="w-4 h-4 accent-indigo-600" />
+		<div class="bg-surface rounded-[28px] shadow-sm px-5 py-4">
+			<div class="flex items-center justify-between mb-4">
+				<h2 class="text-sm font-medium text-on-surface">Add task</h2>
+				<label class="flex items-center gap-2 text-sm text-on-surface-variant cursor-pointer">
+					<md-checkbox
+						checked={addRecurring}
+						onchange={(e: any) => (addRecurring = e.currentTarget.checked)}
+					></md-checkbox>
 					Recurring
 				</label>
 			</div>
@@ -345,42 +340,27 @@
 							await update();
 							showAddForm = false;
 						}}
-					class="flex flex-col gap-2"
+					class="flex flex-col gap-3"
 				>
 					<input type="hidden" name="date" value={data.selectedDate} />
-					<input
-						name="title"
-						type="text"
-						placeholder="Task title…"
-						required
-						class="text-sm rounded-lg border border-gray-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-					/>
+					<md-outlined-text-field name="title" label="Task title…" required style="width: 100%"
+					></md-outlined-text-field>
 					{#if data.members.length > 0}
-						<select
-							name="assignedTo"
-							class="text-sm rounded-lg border border-gray-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
-						>
-							<option value="">Unassigned</option>
-							{#each data.members as m}
-								<option value={m.email}>{m.email}</option>
+						<md-outlined-select name="assignedTo" label="Assigned to" style="width: 100%">
+							<md-select-option value="">Unassigned</md-select-option>
+							{#each data.members as m (m.email)}
+								<md-select-option value={m.email}>{m.email}</md-select-option>
 							{/each}
-						</select>
+						</md-outlined-select>
 					{/if}
-					<label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-						<input type="checkbox" name="hasCounter" checked class="w-4 h-4 accent-indigo-600" />
+					<label class="flex items-center gap-3 text-sm text-on-surface-variant cursor-pointer">
+						<md-checkbox name="hasCounter" checked></md-checkbox>
 						Track count
 					</label>
 					<div class="flex gap-2">
-						<button
-							type="submit"
-							class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700 transition-colors"
-							>Add</button
-						>
-						<button
-							type="button"
-							onclick={() => (showAddForm = false)}
-							class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-							>Cancel</button
+						<md-filled-button type="submit">Add</md-filled-button>
+						<md-outlined-button type="button" onclick={() => (showAddForm = false)}
+							>Cancel</md-outlined-button
 						>
 					</div>
 				</form>
@@ -393,62 +373,58 @@
 							await update();
 							showAddForm = false;
 						}}
-					class="flex flex-col gap-2"
+					class="flex flex-col gap-3"
 				>
-					<input
-						name="title"
-						type="text"
-						placeholder="Task title…"
-						required
-						class="text-sm rounded-lg border border-gray-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-					/>
-					<div class="flex gap-3 items-center">
-						<label class="flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
-							<input type="radio" name="recurring" value="daily" bind:group={recurringType} />
+					<md-outlined-text-field name="title" label="Task title…" required style="width: 100%"
+					></md-outlined-text-field>
+					<div class="flex gap-4">
+						<label class="flex items-center gap-2 text-sm text-on-surface cursor-pointer">
+							<md-radio
+								name="recurring"
+								value="daily"
+								checked={recurringType === 'daily'}
+								onchange={() => (recurringType = 'daily')}
+							></md-radio>
 							Daily
 						</label>
-						<label class="flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
-							<input type="radio" name="recurring" value="weekly" bind:group={recurringType} />
+						<label class="flex items-center gap-2 text-sm text-on-surface cursor-pointer">
+							<md-radio
+								name="recurring"
+								value="weekly"
+								checked={recurringType === 'weekly'}
+								onchange={() => (recurringType = 'weekly')}
+							></md-radio>
 							Weekly
 						</label>
 					</div>
-					<div class="flex gap-2 items-center">
-						<label for="startDate" class="text-sm text-gray-600 shrink-0">Starting:</label>
+					<div class="flex gap-3 items-center">
+						<label for="startDate" class="text-sm text-on-surface-variant shrink-0">Starting:</label
+						>
 						<input
 							id="startDate"
 							name="startDate"
 							type="date"
 							value={data.selectedDate}
 							required
-							class="text-sm rounded-lg border border-gray-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+							class="md3-date-input flex-1"
 						/>
 					</div>
 					{#if data.members.length > 0}
-						<select
-							name="assignedTo"
-							class="text-sm rounded-lg border border-gray-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
-						>
-							<option value="">Unassigned</option>
-							{#each data.members as m}
-								<option value={m.email}>{m.email}</option>
+						<md-outlined-select name="assignedTo" label="Assigned to" style="width: 100%">
+							<md-select-option value="">Unassigned</md-select-option>
+							{#each data.members as m (m.email)}
+								<md-select-option value={m.email}>{m.email}</md-select-option>
 							{/each}
-						</select>
+						</md-outlined-select>
 					{/if}
-					<label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-						<input type="checkbox" name="hasCounter" checked class="w-4 h-4 accent-indigo-600" />
+					<label class="flex items-center gap-3 text-sm text-on-surface-variant cursor-pointer">
+						<md-checkbox name="hasCounter" checked></md-checkbox>
 						Track count
 					</label>
 					<div class="flex gap-2">
-						<button
-							type="submit"
-							class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700 transition-colors"
-							>Add recurring</button
-						>
-						<button
-							type="button"
-							onclick={() => { showAddForm = false; }}
-							class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-							>Cancel</button
+						<md-filled-button type="submit">Add recurring</md-filled-button>
+						<md-outlined-button type="button" onclick={() => (showAddForm = false)}
+							>Cancel</md-outlined-button
 						>
 					</div>
 				</form>
@@ -456,9 +432,12 @@
 		</div>
 	{:else}
 		<button
-			onclick={() => { showAddForm = true; addRecurring = true; }}
-			class="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-gray-200
-			       text-sm text-gray-400 hover:border-indigo-300 hover:text-indigo-500 transition-colors"
+			onclick={() => {
+				showAddForm = true;
+				addRecurring = true;
+			}}
+			class="flex items-center gap-2 px-5 py-3 rounded-[28px] border-2 border-dashed border-outline-variant
+			       text-sm text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
 		>
 			<span class="material-symbols-outlined text-base">add</span>
 			Add task

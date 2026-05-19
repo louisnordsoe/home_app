@@ -1,0 +1,8 @@
+{
+	"$schema": "https://unpkg.com/knip@latest/schema.json",
+	"ignoreDependencies": [
+		"svelte-eslint-parser",
+		"@secretlint/secretlint-rule-preset-recommend",
+		"@types/bcryptjs"
+	]
+}

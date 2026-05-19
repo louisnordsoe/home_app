@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '$lib/enhance';
 	import type { ActionData, PageData } from './$types';
 
 	interface Props {
@@ -35,7 +35,9 @@
 				</div>
 
 				{#if form?.panel === 'create'}
-					<div class="mb-3 p-3 bg-red-50 border border-red-100 text-red-700 text-sm rounded-lg flex items-center gap-2">
+					<div
+						class="mb-3 p-3 bg-red-50 border border-red-100 text-red-700 text-sm rounded-lg flex items-center gap-2"
+					>
 						<span class="material-symbols-outlined text-base shrink-0">error</span>
 						{form.error}
 					</div>
@@ -85,7 +87,9 @@
 				</div>
 
 				{#if form?.panel === 'join'}
-					<div class="mb-3 p-3 bg-red-50 border border-red-100 text-red-700 text-sm rounded-lg flex items-center gap-2">
+					<div
+						class="mb-3 p-3 bg-red-50 border border-red-100 text-red-700 text-sm rounded-lg flex items-center gap-2"
+					>
 						<span class="material-symbols-outlined text-base shrink-0">error</span>
 						{form.error}
 					</div>

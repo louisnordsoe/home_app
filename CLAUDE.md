@@ -44,9 +44,11 @@ MongoDB Change Stream → +server.ts SSE endpoint → Browser EventSource → Sv
 **Tailwind v4** — utility classes only, no config file. The single entry point is `src/app.css` (`@import "tailwindcss"`), imported in `+layout.svelte`. The Vite plugin (`@tailwindcss/vite`) handles the rest.
 
 **Material Symbols Outlined** — loaded from Google Fonts in `src/app.html`. Use as:
+
 ```svelte
 <span class="material-symbols-outlined">home</span>
 ```
+
 Icon names: [fonts.google.com/icons](https://fonts.google.com/icons)
 
 ## Conventions
@@ -63,23 +65,19 @@ All components define props using `$props()` with a named `Props` interface and 
 
 ```svelte
 <script lang="ts">
-  interface Props {
-    name: string
-    count: number
-    optional?: string
-    onClose?: () => void
-  }
+	interface Props {
+		name: string;
+		count: number;
+		optional?: string;
+		onClose?: () => void;
+	}
 
-  let {
-    name,
-    count,
-    optional = 'default',
-    onClose
-  }: Props = $props()
+	let { name, count, optional = 'default', onClose }: Props = $props();
 </script>
 ```
 
 Rules:
+
 - Always define a named `Props` interface — no inline types or `any`
 - Apply the type on the destructure (`: Props = $props()`), not as a generic (`$props<Props>()`)
 - Set defaults inline in the destructure, not in the interface

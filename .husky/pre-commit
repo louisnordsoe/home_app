@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+
+echo "› prettier"
+npm run format:check
+
+echo "› eslint"
+npm run lint
+
+echo "› svelte-check"
+npm run check
+
+echo "› knip"
+npm run knip
+
+echo "› secretlint"
+npm run secrets

@@ -29,7 +29,9 @@ export const actions: Actions = {
 			createdAt: new Date()
 		});
 
-		await db.collection('users').updateOne({ _id: userId }, { $set: { homeId: homeResult.insertedId } });
+		await db
+			.collection('users')
+			.updateOne({ _id: userId }, { $set: { homeId: homeResult.insertedId } });
 
 		redirect(302, '/');
 	},

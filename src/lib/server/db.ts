@@ -3,6 +3,7 @@ import { MONGODB_URI, MONGODB_DB } from '$env/static/private';
 
 // Singleton client — SvelteKit server modules are module-cached in production;
 // in dev, Vite HMR re-imports modules so we pin to globalThis to survive reloads.
+// eslint-disable-next-line no-shadow-restricted-names
 declare const globalThis: { _mongoClient?: MongoClient } & typeof global;
 
 if (!globalThis._mongoClient) {
@@ -13,4 +14,3 @@ if (!globalThis._mongoClient) {
 const mongo = globalThis._mongoClient;
 
 export const db = mongo.db(MONGODB_DB);
-export { mongo };

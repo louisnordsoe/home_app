@@ -15,9 +15,16 @@ async function getHomeMembers(homeId: ObjectId) {
 	if (!home?.memberIds?.length) return [];
 	const users = await db
 		.collection('users')
-		.find({ _id: { $in: home.memberIds } }, { projection: { _id: 1, email: 1 } })
+		.find(
+			{ _id: { $in: home.memberIds } },
+			{ projection: { _id: 1, firstName: 1, lastName: 1 } }
+		)
 		.toArray();
-	return users.map((u) => ({ id: u._id.toString(), email: u.email as string }));
+	return users.map((u) => ({
+		id: u._id.toString(),
+		firstName: (u.firstName as string) ?? '',
+		lastName: (u.lastName as string) ?? ''
+	}));
 }
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -114,28 +121,34 @@ export const actions: Actions = {
 		if (!title || !startDate || !recurring) return fail(400, { error: 'Required fields missing' });
 
 		const homeId = new ObjectId(locals.user.homeId);
-		const recurringGroupId = randomBytes(8).toString('hex');
 		const baseDate = new Date(startDate + 'T00:00:00');
-		const count = recurring === 'daily' ? 365 : 52;
-		const stepDays = recurring === 'daily' ? 1 : 7;
 
-		const docs = Array.from({ length: count }, (_, i) => {
-			const d = new Date(baseDate);
-			d.setDate(d.getDate() + i * stepDays);
-			return {
-				homeId,
-				date: toDateStr(d),
-				title,
-				done: false,
-				assignedTo,
-				recurringGroupId,
-				hasCounter,
-				counter: 0,
-				createdAt: new Date()
-			};
-		});
+		if (recurring === 'daily') {
+			const recurringGroupId = randomBytes(8).toString('hex');
+			const docs = Array.from({ length: 365 }, (_, i) => {
+				const d = new Date(baseDate);
+				d.setDate(d.getDate() + i);
+				return { homeId, date: toDateStr(d), title, done: false, assignedTo, recurringGroupId, hasCounter, counter: 0, createdAt: new Date() };
+			});
+			await db.collection('tasks').insertMany(docs);
+		} else {
+			const days = data.getAll('days').map((d) => parseInt(d as string));
+			if (days.length === 0) return fail(400, { error: 'Select at least one day' });
 
-		await db.collection('tasks').insertMany(docs);
+			const allDocs = days.flatMap((dayOfWeek) => {
+				const recurringGroupId = randomBytes(8).toString('hex');
+				const first = new Date(baseDate);
+				const diff = ((dayOfWeek - first.getDay()) + 7) % 7;
+				first.setDate(first.getDate() + diff);
+				return Array.from({ length: 52 }, (_, i) => {
+					const d = new Date(first);
+					d.setDate(d.getDate() + i * 7);
+					return { homeId, date: toDateStr(d), title, done: false, assignedTo, recurringGroupId, hasCounter, counter: 0, createdAt: new Date() };
+				});
+			});
+			await db.collection('tasks').insertMany(allDocs);
+		}
+
 		return { success: true };
 	},
 
@@ -163,6 +176,7 @@ export const actions: Actions = {
 				taskId: tid,
 				taskTitle: task.title as string,
 				userEmail: locals.user.email,
+				userName: `${locals.user.firstName} ${locals.user.lastName}`.trim(),
 				count: logCount,
 				date: task.date as string,
 				loggedAt: new Date()
@@ -219,6 +233,7 @@ export const actions: Actions = {
 							homeId,
 							taskTitle: updated.title as string,
 							userEmail: locals.user.email,
+							userName: `${locals.user.firstName} ${locals.user.lastName}`.trim(),
 							count: newCounter,
 							date: updated.date as string,
 							loggedAt: new Date()

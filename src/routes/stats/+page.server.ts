@@ -123,12 +123,40 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		byUser.get(email)!.push({ title: row._id.taskTitle as string, count: row.total as number });
 	}
 
+	const emails = Array.from(byUser.keys());
+	const userDocs =
+		emails.length > 0
+			? await db
+					.collection('users')
+					.find(
+						{ email: { $in: emails } },
+						{ projection: { _id: 1, email: 1, firstName: 1, lastName: 1 } }
+					)
+					.toArray()
+			: [];
+	const userByEmail = new Map(
+		userDocs.map((u) => [
+			u.email as string,
+			{
+				id: (u._id as ObjectId).toHexString(),
+				firstName: (u.firstName as string) ?? '',
+				lastName: (u.lastName as string) ?? ''
+			}
+		])
+	);
+
 	const users = Array.from(byUser.entries())
-		.map(([email, tasks]) => ({
-			email,
-			tasks,
-			total: tasks.reduce((s, t) => s + t.count, 0)
-		}))
+		.map(([email, tasks]) => {
+			const info = userByEmail.get(email);
+			return {
+				email,
+				userId: info?.id ?? email,
+				firstName: info?.firstName ?? email,
+				lastName: info?.lastName ?? '',
+				tasks,
+				total: tasks.reduce((s, t) => s + t.count, 0)
+			};
+		})
 		.sort((a, b) => b.total - a.total);
 
 	return {

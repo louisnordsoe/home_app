@@ -126,9 +126,13 @@
 							oninput={(e: any) => (editingMeal = e.currentTarget.value)}
 							style="width: 100%"
 						></md-outlined-text-field>
-						<div class="flex gap-2">
-							<md-filled-button type="submit">Save</md-filled-button>
-							<md-outlined-button type="button" onclick={cancelEdit}>Cancel</md-outlined-button>
+						<div class="flex items-center gap-2">
+							<md-filled-icon-button type="submit" aria-label="Save">
+								<span class="material-symbols-outlined">check</span>
+							</md-filled-icon-button>
+							<md-icon-button type="button" onclick={cancelEdit} aria-label="Cancel">
+								<span class="material-symbols-outlined">close</span>
+							</md-icon-button>
 						</div>
 					</form>
 				{/if}

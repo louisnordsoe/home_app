@@ -65,6 +65,27 @@
 				}}
 				class="flex flex-col gap-4"
 			>
+				{#if mode === 'signup'}
+					<div class="flex gap-3">
+						<md-outlined-text-field
+							name="firstName"
+							type="text"
+							label="First name"
+							required
+							autocomplete="given-name"
+							style="flex: 1"
+						></md-outlined-text-field>
+						<md-outlined-text-field
+							name="lastName"
+							type="text"
+							label="Last name"
+							required
+							autocomplete="family-name"
+							style="flex: 1"
+						></md-outlined-text-field>
+					</div>
+				{/if}
+
 				<md-outlined-text-field
 					name="email"
 					type="email"

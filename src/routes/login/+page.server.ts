@@ -35,12 +35,15 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const email = (data.get('email') as string)?.trim().toLowerCase();
 		const password = data.get('password') as string;
+		const firstName = (data.get('firstName') as string)?.trim();
+		const lastName = (data.get('lastName') as string)?.trim();
 
 		if (!email || !password) return fail(400, { error: 'Email and password are required' });
+		if (!firstName || !lastName) return fail(400, { error: 'First name and last name are required' });
 		if (password.length < 8) return fail(400, { error: 'Password must be at least 8 characters' });
 
 		try {
-			const userId = await createUser(email, password);
+			const userId = await createUser(email, password, firstName, lastName);
 			const token = await createSession(userId);
 			cookies.set('session', token, cookieOpts);
 		} catch (e) {

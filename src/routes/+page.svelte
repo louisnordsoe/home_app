@@ -3,6 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { connected } from '$lib/stores';
 	import type { PageData } from './$types';
+	import UserAvatar from '$lib/components/UserAvatar.svelte';
 
 	interface Props {
 		data: PageData;
@@ -98,12 +99,19 @@
 		<ul class="flex flex-col gap-2">
 			{#each data.recentActivity as log (log.loggedAt + log.userEmail + log.taskTitle)}
 				<li class="bg-surface rounded-[28px] shadow-sm px-5 py-3 flex items-center gap-3">
-					<span class="material-symbols-outlined text-xl text-primary shrink-0">task_alt</span>
+					<UserAvatar
+						userId={log.userId}
+						firstName={log.userFirstName}
+						lastName={log.userLastName}
+						size="sm"
+					/>
 					<div class="flex-1 min-w-0">
 						<p class="text-sm font-medium text-on-surface truncate">
 							{log.taskTitle}{log.count > 1 ? ` ×${log.count}` : ''}
 						</p>
-						<p class="text-xs text-on-surface-variant">{log.userEmail}</p>
+						<p class="text-xs text-on-surface-variant">
+							{log.userLastName ? `${log.userFirstName} ${log.userLastName}` : log.userFirstName}
+						</p>
 					</div>
 					<span class="text-xs text-on-surface-variant opacity-60 shrink-0">
 						{formatDateTime(log.loggedAt)}

@@ -6,6 +6,7 @@
 	import '../app.css';
 	import type { LayoutData } from './$types';
 	import type { Snippet } from 'svelte';
+	import UserAvatar from '$lib/components/UserAvatar.svelte';
 
 	interface Props {
 		data: LayoutData;
@@ -19,7 +20,8 @@
 		{ href: '/meal-plan', label: 'Meal Plan', icon: 'restaurant' },
 		{ href: '/tasks', label: 'Tasks', icon: 'task_alt' },
 		{ href: '/todos', label: 'To-do', icon: 'checklist' },
-		{ href: '/stats', label: 'Stats', icon: 'bar_chart' }
+		{ href: '/stats', label: 'Stats', icon: 'bar_chart' },
+		{ href: '/settings', label: 'Settings', icon: 'settings' }
 	];
 
 	let menuOpen = $state(false);
@@ -97,9 +99,24 @@
 				</nav>
 
 				<div class="px-6 py-4 border-t border-outline-variant">
-					<p class="text-xs text-on-surface-variant mb-3 truncate">{data.user.email}</p>
+					<div class="flex items-center gap-3 mb-3">
+						<UserAvatar
+							userId={data.user.id}
+							firstName={data.user.firstName}
+							lastName={data.user.lastName}
+						/>
+						<div class="min-w-0">
+							<p class="text-sm font-medium text-on-surface truncate">
+								{data.user.firstName} {data.user.lastName}
+							</p>
+							<p class="text-xs text-on-surface-variant truncate">{data.user.email}</p>
+						</div>
+					</div>
 					<form method="POST" action="/logout" use:enhance>
-						<md-text-button type="submit">Log out</md-text-button>
+						<md-text-button type="submit">
+							<span slot="icon" class="material-symbols-outlined">logout</span>
+							Log out
+						</md-text-button>
 					</form>
 				</div>
 			</div>

@@ -10,9 +10,16 @@ async function getHomeMembers(homeId: ObjectId) {
 	if (!home?.memberIds?.length) return [];
 	const users = await db
 		.collection('users')
-		.find({ _id: { $in: home.memberIds } }, { projection: { _id: 1, email: 1 } })
+		.find(
+			{ _id: { $in: home.memberIds } },
+			{ projection: { _id: 1, firstName: 1, lastName: 1 } }
+		)
 		.toArray();
-	return users.map((u) => ({ id: u._id.toString(), email: u.email as string }));
+	return users.map((u) => ({
+		id: u._id.toString(),
+		firstName: (u.firstName as string) ?? '',
+		lastName: (u.lastName as string) ?? ''
+	}));
 }
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -82,6 +89,7 @@ export const actions: Actions = {
 				todoId: tid,
 				taskTitle: todo.title as string,
 				userEmail: locals.user.email,
+				userName: `${locals.user.firstName} ${locals.user.lastName}`.trim(),
 				count: 1,
 				date: today,
 				loggedAt: new Date()

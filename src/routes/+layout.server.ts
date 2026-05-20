@@ -11,7 +11,15 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		if (home) homeName = home.name as string;
 	}
 	return {
-		user: locals.user ? { email: locals.user.email, homeId: locals.user.homeId } : null,
+		user: locals.user
+			? {
+					id: locals.user.id,
+					email: locals.user.email,
+					firstName: locals.user.firstName,
+					lastName: locals.user.lastName,
+					homeId: locals.user.homeId
+				}
+			: null,
 		homeName
 	};
 };

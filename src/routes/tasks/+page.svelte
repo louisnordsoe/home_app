@@ -2,6 +2,7 @@
 	import { enhance } from '$lib/enhance';
 	import { useLiveReload } from '$lib/useLiveReload';
 	import type { PageData } from './$types';
+	import UserAvatar from '$lib/components/UserAvatar.svelte';
 
 	useLiveReload();
 
@@ -14,6 +15,16 @@
 	let showAddForm = $state(false);
 	let addRecurring = $state(true);
 	let recurringType = $state<'daily' | 'weekly'>('daily');
+
+	const weekDays = [
+		{ value: '1', label: 'Mon' },
+		{ value: '2', label: 'Tue' },
+		{ value: '3', label: 'Wed' },
+		{ value: '4', label: 'Thu' },
+		{ value: '5', label: 'Fri' },
+		{ value: '6', label: 'Sat' },
+		{ value: '0', label: 'Sun' }
+	];
 
 	let editingId = $state<string | null>(null);
 	let editTitle = $state('');
@@ -34,6 +45,11 @@
 
 	function cancelEdit() {
 		editingId = null;
+	}
+
+	function getMember(id: string | null) {
+		if (!id) return null;
+		return data.members.find((m) => m.id === id) ?? null;
 	}
 </script>
 
@@ -106,9 +122,9 @@
 								<md-select-option value="" selected={editAssignedTo === ''}
 									>Unassigned</md-select-option
 								>
-								{#each data.members as m (m.email)}
-									<md-select-option value={m.email} selected={editAssignedTo === m.email}
-										>{m.email}</md-select-option
+								{#each data.members as m (m.id)}
+									<md-select-option value={m.id} selected={editAssignedTo === m.id}
+										>{m.firstName} {m.lastName}</md-select-option
 									>
 								{/each}
 							</md-outlined-select>
@@ -121,9 +137,13 @@
 							></md-checkbox>
 							Track count
 						</label>
-						<div class="flex gap-2">
-							<md-filled-button type="submit">Save</md-filled-button>
-							<md-outlined-button type="button" onclick={cancelEdit}>Cancel</md-outlined-button>
+						<div class="flex items-center gap-2">
+							<md-filled-icon-button type="submit" aria-label="Save">
+								<span class="material-symbols-outlined">check</span>
+							</md-filled-icon-button>
+							<md-icon-button type="button" onclick={cancelEdit} aria-label="Cancel">
+								<span class="material-symbols-outlined">close</span>
+							</md-icon-button>
 						</div>
 					</form>
 				{:else if deleteConfirmId === task.id}
@@ -131,7 +151,7 @@
 						<p class="text-sm text-on-surface">
 							{task.isRecurring ? 'Delete just this day or all occurrences?' : 'Delete this task?'}
 						</p>
-						<div class="flex gap-2 flex-wrap">
+						<div class="flex items-center gap-2 flex-wrap">
 							{#if task.isRecurring}
 								<form method="POST" action="?/deleteTask" use:enhance>
 									<input type="hidden" name="taskId" value={task.id} />
@@ -167,9 +187,9 @@
 									>
 								</form>
 							{/if}
-							<md-outlined-button type="button" onclick={() => (deleteConfirmId = null)}
-								>Cancel</md-outlined-button
-							>
+							<md-icon-button type="button" onclick={() => (deleteConfirmId = null)} aria-label="Cancel">
+								<span class="material-symbols-outlined">close</span>
+							</md-icon-button>
 						</div>
 					</div>
 				{:else}
@@ -227,17 +247,24 @@
 							>
 								{task.title}
 							</span>
-							<div class="flex items-center gap-2 mt-0.5">
-								{#if task.isRecurring}
-									<span class="flex items-center gap-0.5 text-xs text-primary">
-										<span class="material-symbols-outlined text-xs leading-none">repeat</span>
-										Recurring
-									</span>
-								{/if}
-								{#if task.assignedTo}
-									<span class="text-xs text-on-surface-variant">{task.assignedTo}</span>
-								{/if}
-							</div>
+							{#if task.isRecurring || task.assignedTo}
+								<div class="flex items-center gap-2 mt-1">
+									{#if task.isRecurring}
+										<span class="material-symbols-outlined text-xs leading-none text-primary">repeat</span>
+									{/if}
+									{#if task.assignedTo}
+										{@const member = getMember(task.assignedTo)}
+										{#if member}
+											<UserAvatar
+												userId={member.id}
+												firstName={member.firstName}
+												lastName={member.lastName}
+												size="sm"
+											/>
+										{/if}
+									{/if}
+								</div>
+							{/if}
 						</div>
 
 						<div class="flex items-center gap-0.5 shrink-0">
@@ -348,8 +375,8 @@
 					{#if data.members.length > 0}
 						<md-outlined-select name="assignedTo" label="Assigned to" style="width: 100%">
 							<md-select-option value="">Unassigned</md-select-option>
-							{#each data.members as m (m.email)}
-								<md-select-option value={m.email}>{m.email}</md-select-option>
+							{#each data.members as m (m.id)}
+								<md-select-option value={m.id}>{m.firstName} {m.lastName}</md-select-option>
 							{/each}
 						</md-outlined-select>
 					{/if}
@@ -357,11 +384,13 @@
 						<md-checkbox name="hasCounter" checked></md-checkbox>
 						Track count
 					</label>
-					<div class="flex gap-2">
-						<md-filled-button type="submit">Add</md-filled-button>
-						<md-outlined-button type="button" onclick={() => (showAddForm = false)}
-							>Cancel</md-outlined-button
-						>
+					<div class="flex items-center gap-2">
+						<md-filled-icon-button type="submit" aria-label="Add">
+							<span class="material-symbols-outlined">check</span>
+						</md-filled-icon-button>
+						<md-icon-button type="button" onclick={() => (showAddForm = false)} aria-label="Cancel">
+							<span class="material-symbols-outlined">close</span>
+						</md-icon-button>
 					</div>
 				</form>
 			{:else}
@@ -397,6 +426,16 @@
 							Weekly
 						</label>
 					</div>
+					{#if recurringType === 'weekly'}
+						<div class="flex gap-3">
+							{#each weekDays as day (day.value)}
+								<label class="flex flex-col items-center gap-0.5 cursor-pointer">
+									<md-checkbox name="days" value={day.value}></md-checkbox>
+									<span class="text-xs text-on-surface-variant">{day.label}</span>
+								</label>
+							{/each}
+						</div>
+					{/if}
 					<div class="flex gap-3 items-center">
 						<label for="startDate" class="text-sm text-on-surface-variant shrink-0">Starting:</label
 						>
@@ -412,8 +451,8 @@
 					{#if data.members.length > 0}
 						<md-outlined-select name="assignedTo" label="Assigned to" style="width: 100%">
 							<md-select-option value="">Unassigned</md-select-option>
-							{#each data.members as m (m.email)}
-								<md-select-option value={m.email}>{m.email}</md-select-option>
+							{#each data.members as m (m.id)}
+								<md-select-option value={m.id}>{m.firstName} {m.lastName}</md-select-option>
 							{/each}
 						</md-outlined-select>
 					{/if}
@@ -421,11 +460,13 @@
 						<md-checkbox name="hasCounter" checked></md-checkbox>
 						Track count
 					</label>
-					<div class="flex gap-2">
-						<md-filled-button type="submit">Add recurring</md-filled-button>
-						<md-outlined-button type="button" onclick={() => (showAddForm = false)}
-							>Cancel</md-outlined-button
-						>
+					<div class="flex items-center gap-2">
+						<md-filled-icon-button type="submit" aria-label="Add recurring">
+							<span class="material-symbols-outlined">check</span>
+						</md-filled-icon-button>
+						<md-icon-button type="button" onclick={() => (showAddForm = false)} aria-label="Cancel">
+							<span class="material-symbols-outlined">close</span>
+						</md-icon-button>
 					</div>
 				</form>
 			{/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { useLiveReload } from '$lib/useLiveReload';
 	import type { PageData } from './$types';
+	import UserAvatar from '$lib/components/UserAvatar.svelte';
 
 	useLiveReload();
 
@@ -77,9 +78,11 @@
 					<div
 						class="px-4 py-3 flex items-center justify-between border-b border-outline-variant bg-surface-container-high"
 					>
-						<div class="flex items-center gap-2">
-							<span class="material-symbols-outlined text-base text-primary">person</span>
-							<span class="text-sm font-medium text-on-surface">{user.email}</span>
+						<div class="flex items-center gap-2.5">
+							<UserAvatar userId={user.userId} firstName={user.firstName} lastName={user.lastName} />
+							<span class="text-sm font-medium text-on-surface"
+								>{user.firstName} {user.lastName}</span
+							>
 						</div>
 						<span class="text-xs text-on-surface-variant tabular-nums">{user.total} total</span>
 					</div>

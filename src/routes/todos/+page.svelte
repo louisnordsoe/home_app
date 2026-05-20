@@ -2,6 +2,7 @@
 	import { enhance } from '$lib/enhance';
 	import { useLiveReload } from '$lib/useLiveReload';
 	import type { PageData } from './$types';
+	import UserAvatar from '$lib/components/UserAvatar.svelte';
 
 	useLiveReload();
 
@@ -29,6 +30,11 @@
 
 	function cancelEdit() {
 		editingId = null;
+	}
+
+	function getMember(id: string | null) {
+		if (!id) return null;
+		return data.members.find((m) => m.id === id) ?? null;
 	}
 </script>
 
@@ -64,15 +70,17 @@
 				style="width: 100%"
 			>
 				<md-select-option value="" selected={newAssignedTo === ''}>Unassigned</md-select-option>
-				{#each data.members as m (m.email)}
-					<md-select-option value={m.email} selected={newAssignedTo === m.email}
-						>{m.email}</md-select-option
+				{#each data.members as m (m.id)}
+					<md-select-option value={m.id} selected={newAssignedTo === m.id}
+						>{m.firstName} {m.lastName}</md-select-option
 					>
 				{/each}
 			</md-outlined-select>
 		{/if}
 		<div class="flex justify-end">
-			<md-filled-button type="submit">Add</md-filled-button>
+			<md-filled-icon-button type="submit" aria-label="Add">
+				<span class="material-symbols-outlined">check</span>
+			</md-filled-icon-button>
 		</div>
 	</form>
 
@@ -115,16 +123,20 @@
 									<md-select-option value="" selected={editAssignedTo === ''}
 										>Unassigned</md-select-option
 									>
-									{#each data.members as m (m.email)}
-										<md-select-option value={m.email} selected={editAssignedTo === m.email}
-											>{m.email}</md-select-option
+									{#each data.members as m (m.id)}
+										<md-select-option value={m.id} selected={editAssignedTo === m.id}
+											>{m.firstName} {m.lastName}</md-select-option
 										>
 									{/each}
 								</md-outlined-select>
 							{/if}
-							<div class="flex gap-2">
-								<md-filled-button type="submit">Save</md-filled-button>
-								<md-outlined-button type="button" onclick={cancelEdit}>Cancel</md-outlined-button>
+							<div class="flex items-center gap-2">
+								<md-filled-icon-button type="submit" aria-label="Save">
+									<span class="material-symbols-outlined">check</span>
+								</md-filled-icon-button>
+								<md-icon-button type="button" onclick={cancelEdit} aria-label="Cancel">
+									<span class="material-symbols-outlined">close</span>
+								</md-icon-button>
 							</div>
 						</form>
 					{:else if deleteConfirmId === todo.id}
@@ -138,9 +150,9 @@
 									>Delete</md-filled-button
 								>
 							</form>
-							<md-outlined-button type="button" onclick={() => (deleteConfirmId = null)}
-								>Cancel</md-outlined-button
-							>
+							<md-icon-button type="button" onclick={() => (deleteConfirmId = null)} aria-label="Cancel">
+								<span class="material-symbols-outlined">close</span>
+							</md-icon-button>
 						</div>
 					{:else}
 						<div class="flex items-center gap-3">
@@ -162,7 +174,20 @@
 									{todo.title}
 								</span>
 								{#if todo.assignedTo}
-									<p class="text-xs text-on-surface-variant mt-0.5">{todo.assignedTo}</p>
+									{@const member = getMember(todo.assignedTo)}
+									{#if member}
+										<div class="flex items-center gap-1.5 mt-1">
+											<UserAvatar
+												userId={member.id}
+												firstName={member.firstName}
+												lastName={member.lastName}
+												size="sm"
+											/>
+											<span class="text-xs text-on-surface-variant"
+												>{member.firstName} {member.lastName}</span
+											>
+										</div>
+									{/if}
 								{/if}
 							</div>
 

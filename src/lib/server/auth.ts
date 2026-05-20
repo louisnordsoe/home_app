@@ -24,6 +24,8 @@ export async function getSessionUser(token: string) {
 	return {
 		id: (user._id as ObjectId).toHexString(),
 		email: user.email as string,
+		firstName: (user.firstName as string) ?? '',
+		lastName: (user.lastName as string) ?? '',
 		homeId: user.homeId ? (user.homeId as ObjectId).toHexString() : undefined
 	};
 }

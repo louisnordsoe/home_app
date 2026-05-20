@@ -59,9 +59,16 @@
 	--md-sys-color-inverse-primary: #bbc3ff;
 
 	font-family: 'Roboto', sans-serif;
+
 }
 
 /* ─── Fallback styles before @material/web registers ───────────────────── */
+md-filled-button,
+md-filled-tonal-button,
+md-outlined-button {
+	padding: 0 10px;
+}
+
 md-filled-button:not(:defined) {
 	display: inline-flex;
 	align-items: center;

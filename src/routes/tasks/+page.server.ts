@@ -40,11 +40,18 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const homeId = new ObjectId(locals.user.homeId);
 	const selectedDay = new Date(selectedDate + 'T00:00:00');
 
-	const taskDocs = await db
-		.collection('tasks')
-		.find({ homeId, date: selectedDate })
-		.sort({ createdAt: 1 })
-		.toArray();
+	const isToday = selectedDate === todayStr;
+
+	const [taskDocs, overdueDocs] = await Promise.all([
+		db.collection('tasks').find({ homeId, date: selectedDate }).sort({ createdAt: 1 }).toArray(),
+		isToday
+			? db
+					.collection('tasks')
+					.find({ homeId, date: { $lt: selectedDate }, done: false })
+					.sort({ date: 1, createdAt: 1 })
+					.toArray()
+			: []
+	]);
 
 	const prevDay = new Date(selectedDay);
 	prevDay.setDate(prevDay.getDate() - 1);
@@ -60,10 +67,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		year: 'numeric'
 	});
 
+	const todayMs = new Date(todayStr + 'T00:00:00').getTime();
+
 	return {
 		selectedDate,
 		today: todayStr,
-		isToday: selectedDate === todayStr,
+		isToday,
 		prevDate: toDateStr(prevDay),
 		nextDate: toDateStr(nextDay),
 		dayLabel: `${dayName}, ${dateLabel}`,
@@ -77,7 +86,30 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			recurringGroupId: (t.recurringGroupId as string | null) ?? null,
 			hasCounter: (t.hasCounter as boolean) ?? false,
 			counter: (t.counter as number) ?? 0
-		}))
+		})),
+		overdueTasks: overdueDocs.map((t) => {
+			const taskDate = t.date as string;
+			const daysOverdue = Math.round(
+				(todayMs - new Date(taskDate + 'T00:00:00').getTime()) / 86_400_000
+			);
+			const dateLabel = new Date(taskDate + 'T00:00:00').toLocaleDateString('en-GB', {
+				weekday: 'short',
+				day: 'numeric',
+				month: 'short'
+			});
+			return {
+				id: t._id.toString(),
+				title: t.title as string,
+				assignedTo: (t.assignedTo as string | null) ?? null,
+				isRecurring: !!t.recurringGroupId,
+				recurringGroupId: (t.recurringGroupId as string | null) ?? null,
+				hasCounter: (t.hasCounter as boolean) ?? false,
+				counter: (t.counter as number) ?? 0,
+				date: taskDate,
+				dateLabel,
+				daysOverdue
+			};
+		})
 	};
 };
 

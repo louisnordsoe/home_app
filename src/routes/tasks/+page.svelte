@@ -345,6 +345,215 @@
 		{/each}
 	</ul>
 
+	{#if data.isToday && data.overdueTasks.length > 0}
+		<div class="flex flex-col gap-2">
+			<h2 class="text-xs font-medium text-error px-1 flex items-center gap-1.5">
+				<span class="material-symbols-outlined text-base leading-none">schedule</span>
+				Overdue
+			</h2>
+			<ul class="flex flex-col gap-2">
+				{#each data.overdueTasks as task (task.id)}
+					<li class="bg-error-container rounded-[28px] shadow-sm px-4 py-3">
+						{#if editingId === task.id}
+							<form
+								method="POST"
+								action="?/editTask"
+								use:enhance={() =>
+									async ({ update }) => {
+										await update();
+										editingId = null;
+									}}
+								class="flex flex-col gap-3"
+							>
+								<input type="hidden" name="taskId" value={task.id} />
+								<md-outlined-text-field
+									name="title"
+									label="Title"
+									value={editTitle}
+									oninput={(e: any) => (editTitle = e.currentTarget.value)}
+									style="width: 100%"
+								></md-outlined-text-field>
+								{#if data.members.length > 0}
+									<md-outlined-select
+										name="assignedTo"
+										label="Assigned to"
+										value={editAssignedTo}
+										onchange={(e: any) => (editAssignedTo = e.currentTarget.value)}
+										style="width: 100%"
+									>
+										<md-select-option value="" selected={editAssignedTo === ''}
+											>Unassigned</md-select-option
+										>
+										{#each data.members as m (m.id)}
+											<md-select-option value={m.id} selected={editAssignedTo === m.id}
+												>{m.firstName} {m.lastName}</md-select-option
+											>
+										{/each}
+									</md-outlined-select>
+								{/if}
+								<label class="flex items-center gap-3 text-sm text-on-error-container cursor-pointer">
+									<md-checkbox
+										name="hasCounter"
+										checked={editHasCounter}
+										onchange={(e: any) => (editHasCounter = e.currentTarget.checked)}
+									></md-checkbox>
+									Track count
+								</label>
+								<div class="flex items-center gap-2">
+									<md-filled-icon-button type="submit" aria-label="Save">
+										<span class="material-symbols-outlined">check</span>
+									</md-filled-icon-button>
+									<md-icon-button type="button" onclick={cancelEdit} aria-label="Cancel">
+										<span class="material-symbols-outlined">close</span>
+									</md-icon-button>
+								</div>
+							</form>
+						{:else if deleteConfirmId === task.id}
+							<div class="flex flex-col gap-3">
+								<p class="text-sm text-on-error-container">
+									{task.isRecurring
+										? 'Delete just this day or all occurrences?'
+										: 'Delete this task?'}
+								</p>
+								<div class="flex items-center gap-2 flex-wrap">
+									{#if task.isRecurring}
+										<form method="POST" action="?/deleteTask" use:enhance>
+											<input type="hidden" name="taskId" value={task.id} />
+											<md-filled-tonal-button
+												type="submit"
+												>This day only</md-filled-tonal-button
+											>
+										</form>
+										<form
+											method="POST"
+											action="?/deleteAllRecurring"
+											use:enhance={() =>
+												async ({ update }) => {
+													await update();
+													deleteConfirmId = null;
+												}}
+										>
+											<input type="hidden" name="recurringGroupId" value={task.recurringGroupId} />
+											<md-filled-button
+												type="submit"
+												style="--md-filled-button-container-color: var(--md-sys-color-error); --md-filled-button-label-text-color: var(--md-sys-color-on-error);"
+												>All occurrences</md-filled-button
+											>
+										</form>
+									{:else}
+										<form method="POST" action="?/deleteTask" use:enhance>
+											<input type="hidden" name="taskId" value={task.id} />
+											<md-filled-button
+												type="submit"
+												style="--md-filled-button-container-color: var(--md-sys-color-error); --md-filled-button-label-text-color: var(--md-sys-color-on-error);"
+												>Delete</md-filled-button
+											>
+										</form>
+									{/if}
+									<md-icon-button
+										type="button"
+										onclick={() => (deleteConfirmId = null)}
+										aria-label="Cancel"
+									>
+										<span class="material-symbols-outlined">close</span>
+									</md-icon-button>
+								</div>
+							</div>
+						{:else}
+							<div class="flex items-center gap-3">
+								<form method="POST" action="?/toggle" use:enhance>
+									<input type="hidden" name="taskId" value={task.id} />
+									<input type="hidden" name="done" value="true" />
+									<md-checkbox
+										onchange={(e: any) => {
+											e.currentTarget.checked = false;
+											e.currentTarget.closest('form')?.requestSubmit();
+										}}
+									></md-checkbox>
+								</form>
+
+								{#if task.hasCounter}
+									<div class="flex items-center gap-0.5 shrink-0">
+										<form method="POST" action="?/updateCounter" use:enhance>
+											<input type="hidden" name="taskId" value={task.id} />
+											<input type="hidden" name="delta" value="-1" />
+											<button
+												type="submit"
+												disabled={task.counter === 0}
+												class="w-8 h-8 rounded-full text-lg leading-none text-on-error-container hover:bg-error disabled:opacity-30 transition-colors"
+												>−</button
+											>
+										</form>
+										<span
+											class="w-8 text-center text-sm font-mono text-on-error-container tabular-nums"
+											>{task.counter}</span
+										>
+										<form method="POST" action="?/updateCounter" use:enhance>
+											<input type="hidden" name="taskId" value={task.id} />
+											<input type="hidden" name="delta" value="1" />
+											<button
+												type="submit"
+												class="w-8 h-8 rounded-full text-lg leading-none text-on-error-container hover:bg-error transition-colors"
+												>+</button
+											>
+										</form>
+									</div>
+								{/if}
+
+								<div class="flex-1 min-w-0">
+									<span class="text-sm text-on-error-container">{task.title}</span>
+									<div class="flex items-center gap-2 mt-0.5">
+										<span class="text-xs text-error font-medium">
+											{task.dateLabel} · {task.daysOverdue}
+											{task.daysOverdue === 1 ? 'day' : 'days'} overdue
+										</span>
+										{#if task.isRecurring}
+											<span class="material-symbols-outlined text-xs leading-none text-error"
+												>repeat</span
+											>
+										{/if}
+										{#if task.assignedTo}
+											{@const member = getMember(task.assignedTo)}
+											{#if member}
+												<UserAvatar
+													userId={member.id}
+													firstName={member.firstName}
+													lastName={member.lastName}
+													size="sm"
+												/>
+											{/if}
+										{/if}
+									</div>
+								</div>
+
+								<div class="flex items-center gap-0.5 shrink-0">
+									<md-icon-button
+										onclick={() => startEdit(task.id, task.title, task.assignedTo, task.hasCounter)}
+										aria-label="Edit task"
+									>
+										<span class="material-symbols-outlined text-base">edit</span>
+									</md-icon-button>
+									<md-icon-button
+										onclick={() => {
+											deleteConfirmId = task.id;
+											bumpPromptId = null;
+										}}
+										aria-label="Delete task"
+									>
+										<span
+											class="material-symbols-outlined text-base"
+											style="color: var(--color-error)">delete</span
+										>
+									</md-icon-button>
+								</div>
+							</div>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
+
 	{#if showAddForm}
 		<div class="bg-surface rounded-[28px] shadow-sm px-5 py-4">
 			<div class="flex items-center justify-between mb-4">

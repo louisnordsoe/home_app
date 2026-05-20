@@ -96,10 +96,8 @@ home_app/
         │   ├── +page.server.ts # User profile and home settings actions
         │   └── +page.svelte    # Settings form
         └── api/
-            ├── watch/
-            │   └── +server.ts  # SSE endpoint — watches entire DB, streams {coll, op} on every change
-            └── changes/
-                └── +server.ts  # Unused legacy SSE endpoint (single-collection watch)
+            └── watch/
+                └── +server.ts  # SSE endpoint — watches entire DB, streams {coll, op} on every change
 ```
 
 ---

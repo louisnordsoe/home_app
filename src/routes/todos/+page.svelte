@@ -150,7 +150,11 @@
 									>Delete</md-filled-button
 								>
 							</form>
-							<md-icon-button type="button" onclick={() => (deleteConfirmId = null)} aria-label="Cancel">
+							<md-icon-button
+								type="button"
+								onclick={() => (deleteConfirmId = null)}
+								aria-label="Cancel"
+							>
 								<span class="material-symbols-outlined">close</span>
 							</md-icon-button>
 						</div>

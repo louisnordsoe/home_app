@@ -15,10 +15,7 @@ async function getHomeMembers(homeId: ObjectId) {
 	if (!home?.memberIds?.length) return [];
 	const users = await db
 		.collection('users')
-		.find(
-			{ _id: { $in: home.memberIds } },
-			{ projection: { _id: 1, firstName: 1, lastName: 1 } }
-		)
+		.find({ _id: { $in: home.memberIds } }, { projection: { _id: 1, firstName: 1, lastName: 1 } })
 		.toArray();
 	return users.map((u) => ({
 		id: u._id.toString(),
@@ -160,7 +157,17 @@ export const actions: Actions = {
 			const docs = Array.from({ length: 365 }, (_, i) => {
 				const d = new Date(baseDate);
 				d.setDate(d.getDate() + i);
-				return { homeId, date: toDateStr(d), title, done: false, assignedTo, recurringGroupId, hasCounter, counter: 0, createdAt: new Date() };
+				return {
+					homeId,
+					date: toDateStr(d),
+					title,
+					done: false,
+					assignedTo,
+					recurringGroupId,
+					hasCounter,
+					counter: 0,
+					createdAt: new Date()
+				};
 			});
 			await db.collection('tasks').insertMany(docs);
 		} else {
@@ -170,12 +177,22 @@ export const actions: Actions = {
 			const allDocs = days.flatMap((dayOfWeek) => {
 				const recurringGroupId = randomBytes(8).toString('hex');
 				const first = new Date(baseDate);
-				const diff = ((dayOfWeek - first.getDay()) + 7) % 7;
+				const diff = (dayOfWeek - first.getDay() + 7) % 7;
 				first.setDate(first.getDate() + diff);
 				return Array.from({ length: 52 }, (_, i) => {
 					const d = new Date(first);
 					d.setDate(d.getDate() + i * 7);
-					return { homeId, date: toDateStr(d), title, done: false, assignedTo, recurringGroupId, hasCounter, counter: 0, createdAt: new Date() };
+					return {
+						homeId,
+						date: toDateStr(d),
+						title,
+						done: false,
+						assignedTo,
+						recurringGroupId,
+						hasCounter,
+						counter: 0,
+						createdAt: new Date()
+					};
 				});
 			});
 			await db.collection('tasks').insertMany(allDocs);

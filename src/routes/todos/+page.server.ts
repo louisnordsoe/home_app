@@ -10,10 +10,7 @@ async function getHomeMembers(homeId: ObjectId) {
 	if (!home?.memberIds?.length) return [];
 	const users = await db
 		.collection('users')
-		.find(
-			{ _id: { $in: home.memberIds } },
-			{ projection: { _id: 1, firstName: 1, lastName: 1 } }
-		)
+		.find({ _id: { $in: home.memberIds } }, { projection: { _id: 1, firstName: 1, lastName: 1 } })
 		.toArray();
 	return users.map((u) => ({
 		id: u._id.toString(),

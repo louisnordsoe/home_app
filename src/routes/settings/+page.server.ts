@@ -22,7 +22,8 @@ export const actions: Actions = {
 		const firstName = (data.get('firstName') as string)?.trim();
 		const lastName = (data.get('lastName') as string)?.trim();
 
-		if (!firstName || !lastName) return fail(400, { profileError: 'First and last name are required' });
+		if (!firstName || !lastName)
+			return fail(400, { profileError: 'First and last name are required' });
 
 		await db
 			.collection('users')

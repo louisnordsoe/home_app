@@ -187,7 +187,11 @@
 									>
 								</form>
 							{/if}
-							<md-icon-button type="button" onclick={() => (deleteConfirmId = null)} aria-label="Cancel">
+							<md-icon-button
+								type="button"
+								onclick={() => (deleteConfirmId = null)}
+								aria-label="Cancel"
+							>
 								<span class="material-symbols-outlined">close</span>
 							</md-icon-button>
 						</div>
@@ -250,7 +254,9 @@
 							{#if task.isRecurring || task.assignedTo}
 								<div class="flex items-center gap-2 mt-1">
 									{#if task.isRecurring}
-										<span class="material-symbols-outlined text-xs leading-none text-primary">repeat</span>
+										<span class="material-symbols-outlined text-xs leading-none text-primary"
+											>repeat</span
+										>
 									{/if}
 									{#if task.assignedTo}
 										{@const member = getMember(task.assignedTo)}
@@ -391,7 +397,9 @@
 										{/each}
 									</md-outlined-select>
 								{/if}
-								<label class="flex items-center gap-3 text-sm text-on-error-container cursor-pointer">
+								<label
+									class="flex items-center gap-3 text-sm text-on-error-container cursor-pointer"
+								>
 									<md-checkbox
 										name="hasCounter"
 										checked={editHasCounter}
@@ -419,10 +427,7 @@
 									{#if task.isRecurring}
 										<form method="POST" action="?/deleteTask" use:enhance>
 											<input type="hidden" name="taskId" value={task.id} />
-											<md-filled-tonal-button
-												type="submit"
-												>This day only</md-filled-tonal-button
-											>
+											<md-filled-tonal-button type="submit">This day only</md-filled-tonal-button>
 										</form>
 										<form
 											method="POST"

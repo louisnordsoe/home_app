@@ -12,7 +12,9 @@ export async function createUser(
 	if (existing) throw new Error('An account with this email already exists');
 
 	const passwordHash = await bcrypt.hash(password, 12);
-	const result = await db.collection('users').insertOne({ email, passwordHash, firstName, lastName });
+	const result = await db
+		.collection('users')
+		.insertOne({ email, passwordHash, firstName, lastName });
 	return result.insertedId;
 }
 

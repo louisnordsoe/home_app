@@ -16,7 +16,11 @@
 
 <div
 	class="rounded-full flex items-center justify-center font-semibold text-white shrink-0
-	       {size === 'sm' ? 'w-7 h-7 text-xs' : size === 'lg' ? 'w-11 h-11 text-base' : 'w-8 h-8 text-xs'}"
+	       {size === 'sm'
+		? 'w-7 h-7 text-xs'
+		: size === 'lg'
+			? 'w-11 h-11 text-base'
+			: 'w-8 h-8 text-xs'}"
 	style="background-color: {color}"
 	title="{firstName} {lastName}"
 >

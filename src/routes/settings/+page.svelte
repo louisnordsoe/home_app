@@ -35,13 +35,17 @@
 			class="px-5 py-4 flex flex-col gap-4"
 		>
 			{#if form?.profileError}
-				<div class="p-3 rounded-xl flex items-center gap-2 text-sm bg-error-container text-on-error-container">
+				<div
+					class="p-3 rounded-xl flex items-center gap-2 text-sm bg-error-container text-on-error-container"
+				>
 					<span class="material-symbols-outlined text-base shrink-0">error</span>
 					{form.profileError}
 				</div>
 			{/if}
 			{#if form?.profileSuccess}
-				<div class="p-3 rounded-xl flex items-center gap-2 text-sm bg-primary-container text-on-primary-container">
+				<div
+					class="p-3 rounded-xl flex items-center gap-2 text-sm bg-primary-container text-on-primary-container"
+				>
 					<span class="material-symbols-outlined text-base shrink-0">check_circle</span>
 					Profile updated
 				</div>
@@ -90,13 +94,17 @@
 			class="px-5 py-4 flex flex-col gap-4"
 		>
 			{#if form?.passwordError}
-				<div class="p-3 rounded-xl flex items-center gap-2 text-sm bg-error-container text-on-error-container">
+				<div
+					class="p-3 rounded-xl flex items-center gap-2 text-sm bg-error-container text-on-error-container"
+				>
 					<span class="material-symbols-outlined text-base shrink-0">error</span>
 					{form.passwordError}
 				</div>
 			{/if}
 			{#if form?.passwordSuccess}
-				<div class="p-3 rounded-xl flex items-center gap-2 text-sm bg-primary-container text-on-primary-container">
+				<div
+					class="p-3 rounded-xl flex items-center gap-2 text-sm bg-primary-container text-on-primary-container"
+				>
 					<span class="material-symbols-outlined text-base shrink-0">check_circle</span>
 					Password updated
 				</div>
@@ -141,9 +149,14 @@
 							<md-filled-button
 								type="submit"
 								style="--md-filled-button-container-color: var(--md-sys-color-error); --md-filled-button-label-text-color: var(--md-sys-color-on-error);"
-							>Leave</md-filled-button>
+								>Leave</md-filled-button
+							>
 						</form>
-						<md-icon-button type="button" onclick={() => (leaveConfirm = false)} aria-label="Cancel">
+						<md-icon-button
+							type="button"
+							onclick={() => (leaveConfirm = false)}
+							aria-label="Cancel"
+						>
 							<span class="material-symbols-outlined">close</span>
 						</md-icon-button>
 					</div>
@@ -153,7 +166,8 @@
 						onclick={() => (leaveConfirm = true)}
 						class="h-10 px-6 rounded-full border text-sm font-medium transition-colors"
 						style="border-color: var(--md-sys-color-error); color: var(--md-sys-color-error)"
-					>Leave home</button>
+						>Leave home</button
+					>
 				{/if}
 			</div>
 		</section>

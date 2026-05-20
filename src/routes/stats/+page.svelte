@@ -79,7 +79,11 @@
 						class="px-4 py-3 flex items-center justify-between border-b border-outline-variant bg-surface-container-high"
 					>
 						<div class="flex items-center gap-2.5">
-							<UserAvatar userId={user.userId} firstName={user.firstName} lastName={user.lastName} />
+							<UserAvatar
+								userId={user.userId}
+								firstName={user.firstName}
+								lastName={user.lastName}
+							/>
 							<span class="text-sm font-medium text-on-surface"
 								>{user.firstName} {user.lastName}</span
 							>

@@ -107,7 +107,8 @@
 						/>
 						<div class="min-w-0">
 							<p class="text-sm font-medium text-on-surface truncate">
-								{data.user.firstName} {data.user.lastName}
+								{data.user.firstName}
+								{data.user.lastName}
 							</p>
 							<p class="text-xs text-on-surface-variant truncate">{data.user.email}</p>
 						</div>

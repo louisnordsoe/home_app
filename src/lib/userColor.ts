@@ -12,7 +12,7 @@ const COLORS = [
 export function userColor(userId: string): string {
 	let hash = 0;
 	for (let i = 0; i < userId.length; i++) {
-		hash = ((hash * 31) + userId.charCodeAt(i)) >>> 0;
+		hash = (hash * 31 + userId.charCodeAt(i)) >>> 0;
 	}
 	return COLORS[hash % COLORS.length];
 }

@@ -53,29 +53,29 @@ Session-based authentication with 30-day tokens stored in the `sessions` collect
 
 ## Routes
 
-| Route | Purpose |
-|---|---|
-| `/` | Dashboard / home |
-| `/login` | Email + password login |
-| `/logout` | DELETE session, redirect to `/login` |
-| `/setup` | Create or join a home (required after registration) |
-| `/tasks` | Task management |
-| `/todos` | To-do list |
-| `/meal-plan` | Meal planning |
-| `/stats` | Activity statistics |
-| `/settings` | User / home settings |
+| Route        | Purpose                                             |
+| ------------ | --------------------------------------------------- |
+| `/`          | Dashboard / home                                    |
+| `/login`     | Email + password login                              |
+| `/logout`    | DELETE session, redirect to `/login`                |
+| `/setup`     | Create or join a home (required after registration) |
+| `/tasks`     | Task management                                     |
+| `/todos`     | To-do list                                          |
+| `/meal-plan` | Meal planning                                       |
+| `/stats`     | Activity statistics                                 |
+| `/settings`  | User / home settings                                |
 
 ## Collections
 
-| Collection | Contents |
-|---|---|
-| `users` | `email`, `passwordHash`, `firstName`, `lastName`, `homeId?` |
-| `sessions` | `token`, `userId`, `expiresAt` |
-| `homes` | `name`, `inviteCode` |
-| `tasks` | Task definitions |
-| `task_logs` | `taskTitle`, `userEmail`, `homeId`, `loggedAt`, `count` |
-| `todos` | To-do items |
-| `meal_plans` | Meal plan entries |
+| Collection   | Contents                                                    |
+| ------------ | ----------------------------------------------------------- |
+| `users`      | `email`, `passwordHash`, `firstName`, `lastName`, `homeId?` |
+| `sessions`   | `token`, `userId`, `expiresAt`                              |
+| `homes`      | `name`, `inviteCode`                                        |
+| `tasks`      | Task definitions                                            |
+| `task_logs`  | `taskTitle`, `userEmail`, `homeId`, `loggedAt`, `count`     |
+| `todos`      | To-do items                                                 |
+| `meal_plans` | Meal plan entries                                           |
 
 ## Styling
 

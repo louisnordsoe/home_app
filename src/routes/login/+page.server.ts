@@ -39,7 +39,8 @@ export const actions: Actions = {
 		const lastName = (data.get('lastName') as string)?.trim();
 
 		if (!email || !password) return fail(400, { error: 'Email and password are required' });
-		if (!firstName || !lastName) return fail(400, { error: 'First name and last name are required' });
+		if (!firstName || !lastName)
+			return fail(400, { error: 'First name and last name are required' });
 		if (password.length < 8) return fail(400, { error: 'Password must be at least 8 characters' });
 
 		try {
